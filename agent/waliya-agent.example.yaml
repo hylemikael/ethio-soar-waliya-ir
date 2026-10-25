@@ -1,0 +1,94 @@
+# ==============================================================================
+# Waliya-IR Linux Endpoint Agent Configuration
+# ==============================================================================
+# WARNING: Keep this file protected (chmod 600) as it contains agent secrets.
+# You can also supply these options via WALIYA_AGENT_* environment variables.
+
+server:
+  # Target Waliya-IR Management Server URL (must be HTTPS in production)
+  url: "http://127.0.0.1:8000"
+
+  # TLS certificate verification (default: true). Set ca_cert_path if using custom CA.
+  tls_verify: true
+  ca_cert_path: null
+
+  # Network timeout in seconds
+  request_timeout_seconds: 15.0
+  max_retries: 3
+  retry_backoff_factor: 1.5
+
+agent:
+  # Unique Agent UUID registered with the server
+  id: "3c1bdddb-c4b6-4eea-98d2-e24a56f3b8f7"
+
+  # Agent Bearer API Token (hashed by server)
+  api_token: "soar-agent-token-example"
+
+  # Per-Agent HMAC-SHA256 Signing Secret (never shared or logged)
+  signing_secret: "agent-hmac-secret-example"
+
+  # Persistent state directory for replay defense database and offline queue
+  state_dir: "./data/agent_state"
+
+telemetry:
+  # Upload cadence and limits
+  upload_interval_seconds: 5.0
+  upload_batch_size: 100
+  buffer_capacity: 5000
+
+  # File Integrity Monitoring (FIM)
+  fim_enabled: true
+  fim_paths:
+    - "/etc/passwd"
+    - "/etc/shadow"
+    - "/etc/ssh"
+    - "/tmp"
+  fim_poll_interval_seconds: 10.0
+  fim_debounce_seconds: 2.0
+  fim_max_file_size_mb: 25.0
+
+  # Process Monitoring
+  process_enabled: true
+  process_poll_interval_seconds: 5.0
+
+  # Authentication Log Monitoring
+  auth_enabled: true
+  auth_log_path: "/var/log/auth.log"
+  auth_poll_interval_seconds: 5.0
+
+  # Network Connection Monitoring
+  network_enabled: true
+  network_poll_interval_seconds: 10.0
+
+c2:
+  # Periodic heartbeat cadence
+  heartbeat_interval_seconds: 15.0
+
+  # Task polling cadence
+  task_poll_interval_seconds: 5.0
+
+# Defensive Response Actions Configuration
+# IMPORTANT SECURITY INVARIANT:
+# Response actions are strictly DISABLED BY DEFAULT (dry-run simulation only).
+# To enable real operating system modifications, enable_response_actions must be explicitly set to true.
+response:
+  # Master killswitch: when false, commands execute in simulated dry-run mode only
+  enable_response_actions: false
+
+  # Clock skew tolerance window in seconds for command validity
+  clock_skew_tolerance_seconds: 30.0
+
+  # Allowlisted defensive actions permitted on this endpoint
+  allowed_actions:
+    - "BLOCK_IP"
+    - "UNBLOCK_IP"
+    - "TERMINATE_PROCESS"
+    - "COLLECT_FORENSIC_ARTIFACT"
+
+  # Bounded forensic artifact destination directory and size limit
+  forensic_artifact_dir: "./data/forensics"
+  max_forensic_size_mb: 10.0
+
+logging:
+  level: "INFO"
+  format: "json"

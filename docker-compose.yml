@@ -1,0 +1,222 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: waliya_postgres
+    restart: unless-stopped
+    security_opt:
+      - "no-new-privileges:true"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-waliya_ir}
+      POSTGRES_USER: ${POSTGRES_USER:-waliya_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-waliya_dev_password}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-waliya_user} -d ${POSTGRES_DB:-waliya_ir}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    stop_signal: SIGINT
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 768M
+        reservations:
+          memory: 256M
+    networks:
+      - waliya_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: waliya_redis
+    restart: unless-stopped
+    security_opt:
+      - "no-new-privileges:true"
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:-waliya_redis_dev_secret}"]
+    ports:
+      - "127.0.0.1:${REDIS_HOST_PORT:-6380}:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-waliya_redis_dev_secret}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 384M
+        reservations:
+          memory: 64M
+    networks:
+      - waliya_network
+
+  migration:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: waliya_migration
+    restart: "no"
+    security_opt:
+      - "no-new-privileges:true"
+    command: ["alembic", "-c", "alembic.ini", "upgrade", "head"]
+    environment:
+      WALIYA_ENV: ${WALIYA_ENV:-development}
+      WALIYA_LOG_LEVEL: ${WALIYA_LOG_LEVEL:-INFO}
+      WALIYA_DATABASE_URL: ${WALIYA_DATABASE_URL:-postgresql+asyncpg://${POSTGRES_USER:-waliya_user}:${POSTGRES_PASSWORD:-waliya_dev_password}@postgres:5432/${POSTGRES_DB:-waliya_ir}}
+      WALIYA_SECRET_KEY: ${WALIYA_SECRET_KEY:-insecure-dev-secret-key-change-in-production-32chars}
+      WALIYA_ADMIN_API_KEY: ${WALIYA_ADMIN_API_KEY:-waliya-admin-supersecret-api-key-2026}
+      WALIYA_AGENT_TOKEN_PEPPER: ${WALIYA_AGENT_TOKEN_PEPPER:-waliya-agent-pepper-dev-value}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 384M
+    networks:
+      - waliya_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: waliya_backend
+    restart: unless-stopped
+    security_opt:
+      - "no-new-privileges:true"
+    command: ["uvicorn", "waliya.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      WALIYA_ENV: ${WALIYA_ENV:-development}
+      WALIYA_LOG_LEVEL: ${WALIYA_LOG_LEVEL:-INFO}
+      WALIYA_SECRET_KEY: ${WALIYA_SECRET_KEY:-insecure-dev-secret-key-change-in-production-32chars}
+      WALIYA_ADMIN_API_KEY: ${WALIYA_ADMIN_API_KEY:-waliya-admin-supersecret-api-key-2026}
+      WALIYA_AGENT_TOKEN_PEPPER: ${WALIYA_AGENT_TOKEN_PEPPER:-waliya-agent-pepper-dev-value}
+      WALIYA_DATABASE_URL: ${WALIYA_DATABASE_URL:-postgresql+asyncpg://${POSTGRES_USER:-waliya_user}:${POSTGRES_PASSWORD:-waliya_dev_password}@postgres:5432/${POSTGRES_DB:-waliya_ir}}
+      WALIYA_REDIS_URL: ${WALIYA_REDIS_URL:-redis://:${REDIS_PASSWORD:-waliya_redis_dev_secret}@redis:6379/0}
+      WALIYA_CORS_ORIGINS: ${WALIYA_CORS_ORIGINS:-["http://localhost:5173","http://127.0.0.1:5173","http://localhost:8080","http://127.0.0.1:8080"]}
+      WALIYA_SESSION_COOKIE_SECURE: ${WALIYA_SESSION_COOKIE_SECURE:-false}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/liveness')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 768M
+        reservations:
+          memory: 128M
+    networks:
+      - waliya_network
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: waliya_worker
+    restart: unless-stopped
+    security_opt:
+      - "no-new-privileges:true"
+    command: ["python", "-m", "waliya.worker"]
+    environment:
+      WALIYA_ENV: ${WALIYA_ENV:-development}
+      WALIYA_LOG_LEVEL: ${WALIYA_LOG_LEVEL:-INFO}
+      WALIYA_SECRET_KEY: ${WALIYA_SECRET_KEY:-insecure-dev-secret-key-change-in-production-32chars}
+      WALIYA_ADMIN_API_KEY: ${WALIYA_ADMIN_API_KEY:-waliya-admin-supersecret-api-key-2026}
+      WALIYA_AGENT_TOKEN_PEPPER: ${WALIYA_AGENT_TOKEN_PEPPER:-waliya-agent-pepper-dev-value}
+      WALIYA_DATABASE_URL: ${WALIYA_DATABASE_URL:-postgresql+asyncpg://${POSTGRES_USER:-waliya_user}:${POSTGRES_PASSWORD:-waliya_dev_password}@postgres:5432/${POSTGRES_DB:-waliya_ir}}
+      WALIYA_REDIS_URL: ${WALIYA_REDIS_URL:-redis://:${REDIS_PASSWORD:-waliya_redis_dev_secret}@redis:6379/0}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 768M
+        reservations:
+          memory: 128M
+    networks:
+      - waliya_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: waliya_frontend
+    restart: unless-stopped
+    security_opt:
+      - "no-new-privileges:true"
+    ports:
+      - "${WALIYA_BIND_HOST:-127.0.0.1}:${WALIYA_PORT:-8080}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    stop_signal: SIGQUIT
+    stop_grace_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 192M
+        reservations:
+          memory: 32M
+    networks:
+      - waliya_network
+
+volumes:
+  pgdata:
+    name: waliya_pgdata
+  redisdata:
+    name: waliya_redisdata
+
+networks:
+  waliya_network:
+    name: waliya_network
+    driver: bridge

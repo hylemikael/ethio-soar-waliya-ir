@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "waliya-ir"
+version = "2.0.0"
+description = "Ethio-SOAR (Waliya-IR): Linux-First Security Operations and Incident Response Platform"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Waliya-IR Security Engineering Team", email = "secops@waliya.local" }
+]
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.6.0",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "greenlet>=3.1.0",
+    "asyncpg>=0.30.0",
+    "alembic>=1.14.0",
+    "redis>=5.2.0",
+    "networkx>=3.4.2",
+    "cryptography>=43.0.0",
+    "pyjwt>=2.10.0",
+    "httpx>=0.28.0",
+    "rich>=13.9.0"
+]
+
+[project.scripts]
+waliya-ti = "waliya.threat_intel.cli:main"
+waliya-worker = "waliya.worker:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "unit: unit test",
+    "integration: integration test",
+]

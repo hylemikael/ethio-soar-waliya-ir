@@ -104,7 +104,7 @@ async def test_action_registry_endpoint(api_headers):
         res = await ac.get("/api/v1/soar/actions/registry", headers=api_headers)
         assert res.status_code == 200
         data = res.json()
-        assert len(data) == 7
+        assert len(data) == 8
 
         action_names = {entry["action_type"] for entry in data}
         expected_actions = {
@@ -115,6 +115,7 @@ async def test_action_registry_endpoint(api_headers):
             "TERMINATE_PROCESS",
             "QUARANTINE_FILE",
             "COLLECT_FORENSIC_ARTIFACT",
+            "RECOVER_WEBSITE_FILE",
         }
         assert action_names == expected_actions
 

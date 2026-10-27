@@ -215,6 +215,16 @@ require_auditor_or_above = require_role([
     UserRole.ADMIN.value,
     UserRole.AUDITOR.value,
 ])
+require_auditor_or_admin = require_role([
+    UserRole.ADMIN.value,
+    UserRole.AUDITOR.value,
+])
+require_viewer_or_above = require_role([
+    UserRole.ADMIN.value,
+    UserRole.OPERATOR.value,
+    UserRole.ANALYST.value,
+    UserRole.AUDITOR.value,
+])
 
 
 async def verify_admin_key(
@@ -249,5 +259,34 @@ async def verify_analyst_or_above(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Action requires analyst privileges. Caller role is '{actor.role}'.",
+        )
+    return actor.username
+
+
+async def verify_auditor_or_admin(
+    actor: AuthenticatedActor = Depends(get_authenticated_actor),
+) -> str:
+    """Authorize compliance and audit requests. Enforces caller has ADMIN or AUDITOR role."""
+    if actor.role not in (UserRole.ADMIN.value, UserRole.AUDITOR.value):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Action requires auditor or administrative privileges. Caller role is '{actor.role}'.",
+        )
+    return actor.username
+
+
+async def verify_viewer_or_above(
+    actor: AuthenticatedActor = Depends(get_authenticated_actor),
+) -> str:
+    """Authorize read-only viewing platform requests. Enforces caller has any valid platform role."""
+    if actor.role not in (
+        UserRole.ADMIN.value,
+        UserRole.OPERATOR.value,
+        UserRole.ANALYST.value,
+        UserRole.AUDITOR.value,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Access denied. Viewer privileges required. Caller role is '{actor.role}'.",
         )
     return actor.username

@@ -152,7 +152,7 @@ def test_mfa_secret_encryption_at_rest():
 
 def test_single_use_recovery_codes_consumption():
     """Verify backup recovery codes can be used once and only once."""
-    plain_codes, encrypted_payload = generate_recovery_codes(settings.SECRET_KEY, num_codes=4)
+    plain_codes, encrypted_payload = generate_recovery_codes(num_codes=4)
     assert len(plain_codes) == 4
 
     test_code = plain_codes[0]

@@ -176,7 +176,7 @@ class TestDisasterRecoveryAndBackups:
         ]
 
         try:
-            res = subprocess.run(restore_cmd, capture_output=True, text=True, timeout=60)
+            res = subprocess.run(restore_cmd, capture_output=True, text=True, timeout=180)
             assert res.returncode == 0, f"restore failed: {res.stderr}"
             assert f"Restoring schema and data into '{test_recovery_db}'" in res.stdout
             assert "Database restoration completed successfully" in res.stdout

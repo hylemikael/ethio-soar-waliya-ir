@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+
+{% block title %}Waliya Medical Center | Home{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <span class="eyebrow">Modern care for every stage of life</span>
+      <h1>Expert hospital care with a human touch.</h1>
+      <p>
+        Waliya Medical Center provides patient-first care in a secure, modern clinical environment.
+        This fictional website demonstrates realistic healthcare services, scheduling, and staff workflows.
+      </p>
+      <div class="actions">
+        <a class="btn btn-primary" href="#appointment">Book an appointment</a>
+        <a class="btn btn-secondary" href="{{ url_for('patient_login') }}">Patient portal</a>
+      </div>
+      <div class="stats">
+        <div>
+          <strong>24/7</strong>
+          <span>Urgent support</span>
+        </div>
+        <div>
+          <strong>32k+</strong>
+          <span>Patients served</span>
+        </div>
+        <div>
+          <strong>120+</strong>
+          <span>Specialists</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-panel card">
+      <div class="mini-header">
+        <div class="dot green"></div>
+        <div class="dot yellow"></div>
+        <div class="dot red"></div>
+      </div>
+      <div class="panel-body">
+        <h3>Today at Waliya</h3>
+        <ul>
+          <li>Primary Care Clinic</li>
+          <li>Cardiology consultations</li>
+          <li>Women’s wellness services</li>
+          <li>Telehealth follow-up visits</li>
+        </ul>
+        <div class="status-box">
+          <span class="pill success">Live</span>
+          <span>Emergency response unit active</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section intro-section">
+  <div class="container two-column">
+    <div>
+      <span class="section-tag">Hospital overview</span>
+      <h2>Built for comfort, safety, and continuity of care.</h2>
+      <p>
+        Waliya Medical Center combines modern diagnostics, multidisciplinary clinicians,
+        and efficient patient support to deliver dependable care for families and individuals.
+      </p>
+    </div>
+    <div class="info-box card">
+      <div class="info-row"><strong>Founded</strong><span>2011</span></div>
+      <div class="info-row"><strong>Accreditation</strong><span>National hospital standards</span></div>
+      <div class="info-row"><strong>Location</strong><span>Addis Ababa, Ethiopia</span></div>
+      <div class="info-row"><strong>Specialties</strong><span>Internal medicine, pediatrics, cardiology</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <span class="section-tag">Core services</span>
+      <h2>Healthcare designed around your needs.</h2>
+    </div>
+    <div class="services-grid">
+      <article class="service-card card">
+        <div class="icon">🩺</div>
+        <h3>Primary Care</h3>
+        <p>Preventive checkups, treatment plans, chronic care management, and annual wellness visits.</p>
+      </article>
+      <article class="service-card card">
+        <div class="icon">🧠</div>
+        <h3>Mental Health</h3>
+        <p>Supportive therapy, behavioral health consultations, and personalized recovery planning.</p>
+      </article>
+      <article class="service-card card">
+        <div class="icon">💓</div>
+        <h3>Cardiology</h3>
+        <p>Heart monitoring, diagnostic imaging, consultation, and cardiac rehabilitation support.</p>
+      </article>
+      <article class="service-card card">
+        <div class="icon">👶</div>
+        <h3>Pediatrics</h3>
+        <p>Child development reviews, immunization services, and family-centered treatment plans.</p>
+      </article>
+      <article class="service-card card">
+        <div class="icon">🧪</div>
+        <h3>Diagnostics</h3>
+        <p>Laboratory testing, imaging, pathology coordination, and rapid turn-around diagnostics.</p>
+      </article>
+      <article class="service-card card">
+        <div class="icon">💻</div>
+        <h3>Telehealth</h3>
+        <p>Virtual follow-ups, check-in consultations, and convenient remote care for patients.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="appointment" class="section appointment-section">
+  <div class="container appointment-grid">
+    <div>
+      <span class="section-tag">Appointments</span>
+      <h2>Schedule a visit with a trusted clinician.</h2>
+      <p>
+        Appointments are fictional demonstration entries intended for presentations and security workflow testing.
+      </p>
+      <ul class="check-list">
+        <li>Same-day urgent evaluation slots</li>
+        <li>Specialist referral coordination</li>
+        <li>Telehealth and in-person scheduling</li>
+      </ul>
+    </div>
+
+    <div class="card appointment-form-wrap">
+      {% if error %}
+      <div class="alert alert-error">{{ error }}</div>
+      {% endif %}
+      {% if success %}
+      <div class="alert alert-success">{{ success }}</div>
+      {% endif %}
+
+      <form method="post" action="{{ url_for('appointments') }}" class="appointment-form">
+        <div class="form-row two-col">
+          <label>
+            Full name
+            <input type="text" name="patient_name" placeholder="Enter patient name" required />
+          </label>
+          <label>
+            Phone
+            <input type="tel" name="phone" placeholder="+251 9xx xxx xxx" required />
+          </label>
+        </div>
+
+        <div class="form-row two-col">
+          <label>
+            Service
+            <select name="service" required>
+              <option value="">Select service</option>
+              <option>General Consultation</option>
+              <option>Cardiology</option>
+              <option>Pediatrics</option>
+              <option>Women’s Health</option>
+              <option>Dermatology</option>
+              <option>Telehealth</option>
+            </select>
+          </label>
+          <label>
+            Preferred doctor
+            <select name="doctor" required>
+              <option value="">Select doctor</option>
+              <option>Dr. Meles Worku</option>
+              <option>Dr. Hana Bekele</option>
+              <option>Dr. Daniel Girmay</option>
+              <option>Dr. Selam Kebede</option>
+              <option>Dr. Yared Asfaw</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="form-row two-col">
+          <label>
+            Date
+            <input type="date" name="appointment_date" required />
+          </label>
+          <label>
+            Visit type
+            <select name="visit_type" required>
+              <option value="">Select visit type</option>
+              <option>In-person</option>
+              <option>Telehealth</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          Reason for visit
+          <textarea name="notes" rows="4" placeholder="Brief description of symptoms or support needed"></textarea>
+        </label>
+
+        <button type="submit" class="btn btn-primary full-width">Request appointment</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="section schedule-section">
+  <div class="container">
+    <div class="section-heading">
+      <span class="section-tag">Sample schedule</span>
+      <h2>Representative clinic availability</h2>
+    </div>
+    <div class="upcoming-list">
+      {% for appointment in appointments %}
+      <div class="schedule-item card">
+        <div>
+          <strong>{{ appointment.patient_name }}</strong>
+          <p>{{ appointment.service }} · {{ appointment.visit_type }}</p>
+        </div>
+        <div>
+          <span class="schedule-date">{{ appointment.appointment_date }}</span>
+          <small>{{ appointment.doctor }}</small>
+        </div>
+      </div>
+      {% else %}
+      <div class="schedule-item card">
+        <div>
+          <strong>No upcoming appointments currently displayed.</strong>
+          <p>Use the appointment form to add a fictional booking demo.</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

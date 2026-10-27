@@ -16,7 +16,7 @@ from waliya.contracts import (
     SimulationRunResponse,
     SimulationScenarioCoverageItem,
 )
-from waliya.core.auth import verify_admin_key
+from waliya.core.auth import verify_operator_or_admin, verify_viewer_or_above
 from waliya.db.models import EventModel, FindingModel, IncidentModel, RuleModel, SimulationRunModel
 from waliya.db.session import get_db_session
 
@@ -61,7 +61,7 @@ REGISTERED_SCENARIOS = [
 )
 async def register_simulation_run(
     req: SimulationRunRegisterRequest,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_operator_or_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> SimulationRunResponse:
     """Register a simulation run prior to event submission.
@@ -117,7 +117,7 @@ async def register_simulation_run(
 async def finalize_simulation_run(
     run_id: str,
     req: SimulationRunFinalizeRequest,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_operator_or_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> SimulationRunResponse:
     """Finalize a simulation run and independently verify detection outcomes against the database.
@@ -264,7 +264,7 @@ async def list_simulation_runs(
     is_negative: Optional[bool] = Query(None, description="Filter by test boundary type"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> List[SimulationRunResponse]:
     """Retrieve history of purple-team simulation runs ordered by execution timestamp."""
@@ -294,7 +294,7 @@ async def list_simulation_runs(
 )
 async def get_simulation_run(
     run_id: str,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> SimulationRunResponse:
     """Retrieve full details, expected vs observed results, and linked evidence for a run."""
@@ -318,7 +318,7 @@ async def get_simulation_run(
     summary="Get purple-team simulation coverage and validation matrix",
 )
 async def get_simulation_coverage(
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> SimulationCoverageResponse:
     """Calculate aggregate purple-team validation coverage across registered scenarios and rules."""

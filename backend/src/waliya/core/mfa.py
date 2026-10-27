@@ -64,12 +64,19 @@ def generate_totp_uri(
     return f"otpauth://totp/{quote(label)}?secret={secret}&issuer={quote(issuer)}&algorithm=SHA1&digits={TOTP_DIGITS}&period={TOTP_STEP_SECONDS}"
 
 
-def generate_recovery_codes(secret_key: str, num_codes: int = NUM_RECOVERY_CODES) -> Tuple[List[str], str]:
+def generate_recovery_codes(
+    secret_key: Optional[str] = None,
+    num_codes: int = NUM_RECOVERY_CODES,
+) -> Tuple[List[str], str]:
     """Generate single-use backup recovery codes and their encrypted storage payload.
 
     Returns:
         (plain_codes_for_user, encrypted_storage_json)
     """
+    if secret_key is None:
+        from waliya.config import settings
+        secret_key = settings.SECRET_KEY
+
     plain_codes = []
     hashed_codes = []
     for _ in range(num_codes):

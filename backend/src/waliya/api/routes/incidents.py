@@ -26,9 +26,9 @@ from waliya.contracts import (
     SeverityEnum,
 )
 from waliya.core.auth import (
-    verify_admin_key,
     verify_analyst_or_above,
     verify_operator_or_admin,
+    verify_viewer_or_above,
 )
 from waliya.db.models import FindingModel, IncidentModel, ThreatIndicatorModel
 from waliya.db.session import get_db_session
@@ -58,7 +58,7 @@ async def list_incidents(
     severity_filter: Optional[SeverityEnum] = Query(default=None, alias="severity"),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
-    _admin: str = Depends(verify_analyst_or_above),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> List[IncidentSummary]:
     """Retrieve filtered security incidents ordered by last observation timestamp."""
@@ -111,7 +111,7 @@ async def list_incidents(
 )
 async def get_incident(
     incident_id: UUID,
-    _admin: str = Depends(verify_analyst_or_above),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> IncidentDetail:
     """Retrieve full incident details including risk factor breakdown and entities."""
@@ -173,7 +173,7 @@ async def get_incident(
 )
 async def get_incident_evidence(
     incident_id: UUID,
-    _admin: str = Depends(verify_analyst_or_above),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> Dict[str, Any]:
     """Retrieve all findings, timeline entries, affected entities, and cryptographic evidence manifest."""
@@ -283,7 +283,7 @@ async def get_incident_evidence(
 )
 async def get_incident_threat_intel(
     incident_id: UUID,
-    _admin: str = Depends(verify_analyst_or_above),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> IncidentThreatIntelSummary:
     """Retrieve all confirmed and heuristic threat intelligence context linked to an incident."""
@@ -444,7 +444,7 @@ async def get_incident_threat_intel(
 )
 async def seal_incident_evidence(
     incident_id: UUID,
-    _admin: str = Depends(verify_analyst_or_above),
+    _admin: str = Depends(verify_operator_or_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> Dict[str, Any]:
     """Calculate and seal SHA-256 evidence manifest hash for non-repudiation."""
@@ -516,7 +516,7 @@ async def seal_incident_evidence(
 )
 async def export_incident_dossier(
     incident_id: UUID,
-    _admin: str = Depends(verify_analyst_or_above),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> Dict[str, Any]:
     """Generate structured, validated JSON case dossier for digital forensics and compliance."""
@@ -554,7 +554,7 @@ async def export_incident_dossier(
 )
 async def get_incident_graph(
     incident_id: UUID,
-    _admin: str = Depends(verify_analyst_or_above),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> GraphSnapshot:
     """Retrieve the incident-specific entity correlation subgraph, rebuilding from evidence if needed."""
@@ -596,7 +596,7 @@ async def get_incident_graph(
 )
 async def get_incident_attack_paths(
     incident_id: UUID,
-    _admin: str = Depends(verify_analyst_or_above),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> List[AttackPath]:
     """Retrieve computed directed attack progression paths for an incident."""
@@ -612,7 +612,7 @@ async def get_incident_attack_paths(
 )
 async def refresh_incident_graph(
     incident_id: UUID,
-    _admin: str = Depends(verify_analyst_or_above),
+    _admin: str = Depends(verify_operator_or_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> GraphSnapshot:
     """Force deterministic re-extraction of attack graph and paths from PostgreSQL evidence."""
@@ -641,7 +641,7 @@ async def refresh_incident_graph(
 )
 async def get_incident_mitre_coverage(
     incident_id: UUID,
-    _admin: str = Depends(verify_analyst_or_above),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> IncidentAttackCoverageResponse:
     """Retrieve explainable, evidence-backed MITRE ATT&CK technique coverage and mapping state for an incident."""
@@ -677,7 +677,7 @@ async def get_incident_mitre_coverage(
 async def get_incident_reconstruction(
     incident_id: UUID,
     max_items: int = Query(default=200, ge=1, le=500, description="Max chronological timeline items"),
-    _admin: str = Depends(verify_analyst_or_above),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> IncidentReconstructionResponse:
     """Retrieve deterministic incident reconstruction synthesizing entity graphs, ATT&CK, and chronological telemetry."""

@@ -4,22 +4,247 @@
 
 @layer base {
   body {
-    @apply bg-[#090d16] text-slate-100 font-sans antialiased;
+    background-color: #FFFFFF;
+    color: #222222;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-/* Custom terminal/cyber-ops scrollbars */
+/* Clean, standard browser scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0d121f;
+  background: #F7F7F7;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1f293d;
+  background: #D1D5DB;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3b82f6;
+  background: #9CA3AF;
+}
+
+/* Neutralize AI-dashboard effects: gradients, glowing animations, glassmorphism */
+.bg-gradient-to-r,
+.bg-gradient-to-b,
+.bg-gradient-to-tr,
+.bg-gradient-to-br {
+  background-image: none !important;
+}
+
+.animate-ping {
+  animation: none !important;
+}
+
+.backdrop-blur-sm,
+.backdrop-blur-md,
+.backdrop-blur-lg {
+  backdrop-filter: none !important;
+}
+
+/* Light theme overrides for hardcoded dark background utilities */
+.bg-\[\#090d16\],
+.bg-\[\#0b101d\],
+.bg-\[\#0d121f\],
+.bg-\[\#0d1322\],
+.bg-\[\#0d1424\],
+.bg-\[\#0a0f1d\],
+.bg-\[\#080d1a\],
+.bg-\[\#0b101c\]\/50,
+.bg-\[\#0d1424\]\/90,
+.bg-slate-950,
+.bg-slate-900 {
+  background-color: #FFFFFF !important;
+}
+
+.bg-slate-800 {
+  background-color: #F9FAFB !important;
+}
+
+.bg-slate-700 {
+  background-color: #F3F4F6 !important;
+}
+
+/* Border overrides */
+.border-slate-800,
+.border-slate-700,
+.border-slate-600,
+.border-\[\#1f293d\] {
+  border-color: #E5E7EB !important;
+}
+
+/* Typography readability on white/light backgrounds */
+.text-slate-100,
+.text-slate-200 {
+  color: #111827 !important;
+}
+
+.text-slate-300 {
+  color: #374151 !important;
+}
+
+.text-slate-400 {
+  color: #4B5563 !important;
+}
+
+.text-slate-500 {
+  color: #666666 !important;
+}
+
+.text-slate-600 {
+  color: #6B7280 !important;
+}
+
+/* Headings and card titles that were text-white in dark mode */
+h1.text-white, h2.text-white, h3.text-white, h4.text-white, h5.text-white, h6.text-white {
+  color: #111827 !important;
+}
+
+div.text-white:not(button *):not(button):not(a *):not(.bg-blue-600 *):not(.bg-red-600 *):not(.bg-purple-600 *):not(.bg-emerald-600 *) {
+  color: #111827 !important;
+}
+
+span.text-white:not(button *):not(button):not(a *):not(.bg-blue-600 *):not(.bg-red-600 *):not(.bg-purple-600 *):not(.bg-emerald-600 *) {
+  color: #111827 !important;
+}
+
+p.text-white, td.text-white, th.text-white {
+  color: #111827 !important;
+}
+
+input.text-white, textarea.text-white, select.text-white {
+  color: #111827 !important;
+}
+
+/* Clean, restrained status badges and pills */
+.bg-red-950,
+.bg-red-950\/80,
+.bg-red-950\/60,
+.bg-red-950\/50,
+.bg-red-950\/40,
+.bg-red-950\/30 {
+  background-color: #FEF2F2 !important;
+}
+.text-red-300,
+.text-red-400 {
+  color: #B91C1C !important;
+}
+.border-red-800,
+.border-red-800\/80,
+.border-red-800\/60,
+.border-red-800\/50,
+.border-red-700,
+.border-red-500\/40,
+.border-red-500\/30 {
+  border-color: #FECACA !important;
+}
+
+.bg-amber-950,
+.bg-amber-950\/80,
+.bg-amber-950\/60,
+.bg-amber-950\/50,
+.bg-amber-950\/40,
+.bg-amber-950\/20,
+.bg-orange-950\/80,
+.bg-yellow-950\/80 {
+  background-color: #FFFBEB !important;
+}
+.text-amber-300,
+.text-amber-400,
+.text-orange-300,
+.text-yellow-300 {
+  color: #B45309 !important;
+}
+.border-amber-800,
+.border-amber-800\/80,
+.border-amber-700,
+.border-orange-800\/80,
+.border-yellow-800\/80,
+.border-amber-500\/40,
+.border-amber-500\/30 {
+  border-color: #FDE68A !important;
+}
+
+.bg-emerald-950,
+.bg-emerald-950\/60,
+.bg-emerald-950\/40,
+.bg-green-950 {
+  background-color: #F0FDF4 !important;
+}
+.text-emerald-300,
+.text-emerald-400 {
+  color: #15803D !important;
+}
+.border-emerald-800,
+.border-emerald-800\/50,
+.border-emerald-700,
+.border-emerald-500\/40 {
+  border-color: #BBF7D0 !important;
+}
+
+.bg-blue-950,
+.bg-blue-950\/80,
+.bg-blue-950\/70,
+.bg-blue-950\/40,
+.bg-blue-950\/30 {
+  background-color: #EFF6FF !important;
+}
+.text-blue-300,
+.text-blue-400 {
+  color: #1D4ED8 !important;
+}
+.border-blue-800,
+.border-blue-800\/50,
+.border-blue-800\/40,
+.border-blue-900\/60,
+.border-blue-500\/30,
+.border-blue-500\/20 {
+  border-color: #BFDBFE !important;
+}
+
+.bg-purple-950,
+.bg-purple-950\/40 {
+  background-color: #FAF5FF !important;
+}
+.text-purple-300,
+.text-purple-400 {
+  color: #7E22CE !important;
+}
+.border-purple-800,
+.border-purple-800\/40 {
+  border-color: #E9D5FF !important;
+}
+
+.bg-cyan-950,
+.bg-cyan-950\/40 {
+  background-color: #ECFEFF !important;
+}
+.text-cyan-300,
+.text-cyan-400 {
+  color: #0E7490 !important;
+}
+.border-cyan-800,
+.border-cyan-800\/40 {
+  border-color: #A5F3FC !important;
+}
+
+/* Form inputs & controls */
+input[type="text"],
+input[type="password"],
+input[type="search"],
+input[type="number"],
+textarea,
+select {
+  background-color: #FFFFFF !important;
+  color: #111827 !important;
+  border-color: #D1D5DB !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9CA3AF !important;
 }

@@ -16,16 +16,16 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   onAction,
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-dashed border-border bg-[#0b101c]/50">
-      <div className="p-3.5 rounded-full bg-surface-elevated text-slate-400 mb-4 border border-border">
+    <div className="flex flex-col items-center justify-center p-10 text-center rounded-lg border border-dashed border-gray-300 bg-gray-50/50">
+      <div className="p-3 rounded-full bg-white text-gray-400 mb-3 border border-gray-200">
         {icon}
       </div>
-      <h3 className="text-sm font-semibold text-slate-200 mb-1">{title}</h3>
-      <p className="text-xs text-slate-400 max-w-sm mb-6 leading-relaxed">{description}</p>
+      <h3 className="text-sm font-semibold text-gray-900 mb-1">{title}</h3>
+      <p className="text-xs text-gray-500 max-w-sm mb-4 leading-relaxed">{description}</p>
       {actionText && onAction && (
         <button
           onClick={onAction}
-          className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition-colors"
+          className="px-3.5 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium transition-colors"
         >
           {actionText}
         </button>

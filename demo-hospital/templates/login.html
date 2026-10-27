@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Waliya Medical Center | {% if role == 'staff' %}Staff Login{% else %}Patient Login{% endif %}{% endblock %}
+
+{% block content %}
+<section class="section auth-section">
+  <div class="container auth-grid">
+    <div class="auth-copy">
+      <span class="section-tag">Secure access</span>
+      <h1>{% if role == 'staff' %}Staff portal{% else %}Patient portal{% endif %}</h1>
+      <p>
+        {% if role == 'staff' %}
+        Access the protected staff dashboard using the staff-only demo accounts.
+        {% else %}
+        Sign in to your fictional patient account to review appointment details and communication history.
+        {% endif %}
+      </p>
+      <div class="demo-box card">
+        <h3>Demo credentials</h3>
+        <ul>
+          {% if role == 'staff' %}
+          <li><strong>Staff:</strong> dr_abel / Staff@2025</li>
+          <li><strong>Admin:</strong> admin / Admin@2025</li>
+          {% else %}
+          <li><strong>Patient:</strong> patient1 / PatientPass!2025</li>
+          <li><strong>Patient:</strong> patient2 / Care123!Patient</li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="card auth-card">
+      {% if error %}
+      <div class="alert alert-error">{{ error }}</div>
+      {% endif %}
+
+      <form method="post" class="auth-form">
+        <label>
+          Username
+          <input type="text" name="username" required placeholder="Enter username" />
+        </label>
+        <label>
+          Password
+          <input type="password" name="password" required placeholder="Enter password" />
+        </label>
+        <button type="submit" class="btn btn-primary full-width">Sign in</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

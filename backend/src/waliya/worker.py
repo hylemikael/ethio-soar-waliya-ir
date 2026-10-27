@@ -7,6 +7,7 @@ import sys
 from typing import Optional
 
 from waliya.config import settings
+from waliya.integrations.delivery_service import NotificationDeliveryService
 from waliya.observability.correlation import SensitiveDataFilter
 from waliya.telemetry.consumer_worker import TelemetryConsumerWorker
 
@@ -25,9 +26,9 @@ def setup_worker_logging() -> None:
 
 
 async def run_worker_daemon() -> None:
-    """Run the telemetry worker with graceful signal trapping and batch settling."""
+    """Run the telemetry worker and outbound notification delivery dispatcher daemon."""
     setup_worker_logging()
-    logger.info("Initializing Ethio-SOAR Telemetry Consumer Worker daemon...")
+    logger.info("Initializing Ethio-SOAR background worker daemon (telemetry + notification dispatcher)...")
 
     worker = TelemetryConsumerWorker()
     stop_event = asyncio.Event()
@@ -46,34 +47,50 @@ async def run_worker_daemon() -> None:
             signal.signal(sig, lambda s, f: _signal_handler(s))
 
     worker_task = asyncio.create_task(worker.run_forever())
+    delivery_task = asyncio.create_task(
+        NotificationDeliveryService.run_delivery_worker(
+            stop_event=stop_event,
+            batch_size=50,
+            poll_interval_seconds=3.0,
+            allow_local_for_testing=settings.ENV in ("test", "testing"),
+        )
+    )
     stop_task = asyncio.create_task(stop_event.wait())
 
     done, pending = await asyncio.wait(
-        [worker_task, stop_task],
+        [worker_task, delivery_task, stop_task],
         return_when=asyncio.FIRST_COMPLETED,
     )
 
-    if stop_task.done() and not worker_task.done():
-        logger.info("Waiting up to 10s for active telemetry batch to commit and acknowledge...")
+    if stop_task.done():
+        logger.info("Shutdown initiated, waiting up to 10s for active batches and deliveries to settle...")
         worker._is_running = False
+        stop_event.set()
         try:
-            await asyncio.wait_for(worker_task, timeout=10.0)
+            await asyncio.wait_for(
+                asyncio.gather(worker_task, delivery_task, return_exceptions=True),
+                timeout=10.0,
+            )
         except (asyncio.TimeoutError, asyncio.CancelledError):
             logger.warning("Worker shutdown timed out, cancelling remaining tasks...")
             worker_task.cancel()
-    elif worker_task.done():
-        # Worker exited on its own (or error)
-        try:
-            worker_task.result()
-        except Exception as exc:
-            logger.error("Worker terminated with unhandled exception: %s", exc)
-            sys.exit(1)
+            delivery_task.cancel()
+    else:
+        # A worker task terminated unexpectedly
+        stop_event.set()
+        worker._is_running = False
+        for t, name in [(worker_task, "Telemetry worker"), (delivery_task, "Notification delivery worker")]:
+            if t.done() and not t.cancelled():
+                exc = t.exception()
+                if exc:
+                    logger.error("%s terminated with unhandled exception: %s", name, exc)
+        await asyncio.gather(worker_task, delivery_task, return_exceptions=True)
+        sys.exit(1)
 
-    # Cancel pending stop task if worker stopped first
     if not stop_task.done():
         stop_task.cancel()
 
-    logger.info("Ethio-SOAR Telemetry Consumer Worker daemon terminated cleanly.")
+    logger.info("Ethio-SOAR background worker daemon terminated cleanly.")
 
 
 def main() -> None:

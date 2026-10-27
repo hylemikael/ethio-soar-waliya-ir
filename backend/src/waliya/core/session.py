@@ -12,11 +12,14 @@ import hashlib
 import hmac
 import logging
 import secrets
+import threading
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional, Tuple
 
 logger = logging.getLogger("waliya.core.session")
+
+_session_lock = threading.Lock()
 
 # In-memory revocation registry mapping session_id -> expires_at_timestamp
 _REVOKED_SESSIONS: Dict[str, float] = {}
@@ -25,24 +28,56 @@ _REVOKED_SESSIONS: Dict[str, float] = {}
 _REVOKED_USER_TIMESTAMPS: Dict[str, float] = {}
 
 
+def _get_redis_client() -> Optional[Any]:
+    """Lazy load Redis client for distributed session revocation."""
+    try:
+        from redis import Redis
+        from waliya.config import settings
+        return Redis.from_url(settings.REDIS_URL, decode_responses=True, socket_timeout=2.0)
+    except Exception as exc:
+        logger.debug("Redis connection not available for session revocation: %s", exc)
+        return None
+
+
 def revoke_session(
     session_id: str,
     expires_at_timestamp: Optional[float] = None,
     user_id: Optional[str] = None,
 ) -> None:
-    """Register a session as revoked immediately on the server."""
+    """Register a session as revoked immediately on the server across all workers."""
     now = time.time()
     # Default TTL of 8 hours if not provided
     expiry = expires_at_timestamp if expires_at_timestamp is not None else now + 28800
-    _REVOKED_SESSIONS[session_id] = expiry
-    _cleanup_expired_revocations()
+    ttl = max(1, int(expiry - now))
+
+    with _session_lock:
+        _REVOKED_SESSIONS[session_id] = expiry
+        _cleanup_expired_revocations()
+
+    r = _get_redis_client()
+    if r is not None:
+        try:
+            r.set(f"session:revoked:{session_id}", "1", ex=ttl)
+        except Exception as exc:
+            logger.debug("Redis set session revocation failed: %s", exc)
+
     logger.info("Session %s revoked on server (user_id=%s)", session_id, user_id or "unknown")
 
 
 def revoke_all_user_sessions(user_id: str) -> None:
-    """Invalidate all active sessions issued for a user before current timestamp."""
+    """Invalidate all active sessions issued for a user before current timestamp across all workers."""
     now = time.time()
-    _REVOKED_USER_TIMESTAMPS[user_id] = now
+    with _session_lock:
+        _REVOKED_USER_TIMESTAMPS[user_id] = now
+
+    r = _get_redis_client()
+    if r is not None:
+        try:
+            # TTL equal to max session lifespan (8 hours = 28800 seconds)
+            r.set(f"session:user_revoked_before:{user_id}", str(now), ex=28800)
+        except Exception as exc:
+            logger.debug("Redis user session bulk revocation failed: %s", exc)
+
     logger.info("All existing sessions for user %s revoked at ts %f", user_id, now)
 
 
@@ -54,19 +89,36 @@ def is_session_revoked(
     """Check whether a session ID or user has been revoked on the server."""
     now = time.time()
 
-    # Check individual session revocation
-    if session_id in _REVOKED_SESSIONS:
-        expiry = _REVOKED_SESSIONS[session_id]
-        if expiry > now:
-            return True
-        else:
-            _REVOKED_SESSIONS.pop(session_id, None)
+    # 1. Fast in-memory check
+    with _session_lock:
+        if session_id in _REVOKED_SESSIONS:
+            expiry = _REVOKED_SESSIONS[session_id]
+            if expiry > now:
+                return True
+            else:
+                _REVOKED_SESSIONS.pop(session_id, None)
 
-    # Check user-level bulk revocation timestamp
-    if user_id and user_id in _REVOKED_USER_TIMESTAMPS:
-        revoked_before = _REVOKED_USER_TIMESTAMPS[user_id]
-        if issued_at <= revoked_before:
-            return True
+        if user_id and user_id in _REVOKED_USER_TIMESTAMPS:
+            revoked_before = _REVOKED_USER_TIMESTAMPS[user_id]
+            if issued_at <= revoked_before:
+                return True
+
+    # 2. Distributed Redis check
+    r = _get_redis_client()
+    if r is not None:
+        try:
+            if r.exists(f"session:revoked:{session_id}"):
+                return True
+            if user_id:
+                rev_ts_val = r.get(f"session:user_revoked_before:{user_id}")
+                if rev_ts_val:
+                    try:
+                        if issued_at <= float(rev_ts_val):
+                            return True
+                    except ValueError:
+                        pass
+        except Exception as exc:
+            logger.debug("Redis is_session_revoked lookup failed: %s", exc)
 
     return False
 
@@ -81,8 +133,18 @@ def _cleanup_expired_revocations() -> None:
 
 def clear_revocations_for_tests() -> None:
     """Clear revocation caches (for automated tests)."""
-    _REVOKED_SESSIONS.clear()
-    _REVOKED_USER_TIMESTAMPS.clear()
+    with _session_lock:
+        _REVOKED_SESSIONS.clear()
+        _REVOKED_USER_TIMESTAMPS.clear()
+
+    r = _get_redis_client()
+    if r is not None:
+        try:
+            keys = r.keys("session:revoked:*") + r.keys("session:user_revoked_before:*")
+            if keys:
+                r.delete(*keys)
+        except Exception:
+            pass
 
 
 def create_session_token(

@@ -1,0 +1,5 @@
+# Waliya Medical Center - simulated webshell indicator review
+# This file is intentionally harmless and demonstrates monitoring output only.
+status: no_high_confidence_indicators_detected
+observed_signals: 0
+notes: safe demo environment

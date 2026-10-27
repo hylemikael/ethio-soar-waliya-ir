@@ -69,6 +69,7 @@ class ResponseActionEnum(str, Enum):
     TERMINATE_PROCESS = "TERMINATE_PROCESS"
     QUARANTINE_FILE = "QUARANTINE_FILE"
     COLLECT_FORENSIC_ARTIFACT = "COLLECT_FORENSIC_ARTIFACT"
+    RECOVER_WEBSITE_FILE = "RECOVER_WEBSITE_FILE"
 
 
 class ResponseStateEnum(str, Enum):
@@ -935,6 +936,14 @@ class CollectForensicParams(BaseContract):
     destination_path: Optional[str] = None
 
 
+class RecoverWebsiteFileParams(BaseContract):
+    target_file: str = Field(..., min_length=1, max_length=1024)
+    backup_file: str = Field(..., min_length=1, max_length=1024)
+    expected_hash: str = Field(..., min_length=64, max_length=64)
+    quarantine_directory: Optional[str] = Field(default=None)
+    web_root: Optional[str] = Field(default=None)
+
+
 ActionParameters = Union[
     IsolateHostParams,
     RestoreHostParams,
@@ -943,6 +952,7 @@ ActionParameters = Union[
     TerminateProcessParams,
     QuarantineFileParams,
     CollectForensicParams,
+    RecoverWebsiteFileParams,
 ]
 
 

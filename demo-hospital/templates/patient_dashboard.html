@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Waliya Medical Center | Patient Dashboard{% endblock %}
+
+{% block content %}
+<section class="section page-section">
+  <div class="container dashboard-header">
+    <div>
+      <span class="section-tag">Patient dashboard</span>
+      <h1>Welcome, {{ session['full_name'] }}</h1>
+    </div>
+    <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container dashboard-grid">
+    <div class="card info-panel">
+      <h3>Medical summary</h3>
+      <ul>
+        <li>Primary physician: Dr. Meles Worku</li>
+        <li>Last wellness review: 2026-10-12</li>
+        <li>Care plan: follow-up and preventive screenings</li>
+      </ul>
+    </div>
+    <div class="card info-panel">
+      <h3>Account status</h3>
+      <ul>
+        <li>Portal access: active</li>
+        <li>Preferred contact: Secure email</li>
+        <li>Next review: scheduled by clinic</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <span class="section-tag">Appointments</span>
+      <h2>Upcoming visit timeline</h2>
+    </div>
+    <div class="dashboard-list">
+      {% for appointment in appointments %}
+      <div class="schedule-item card">
+        <div>
+          <strong>{{ appointment.service }}</strong>
+          <p>{{ appointment.doctor }} · {{ appointment.visit_type }}</p>
+        </div>
+        <div>
+          <span class="schedule-date">{{ appointment.appointment_date }}</span>
+          <small>{{ appointment.notes or 'No notes recorded' }}</small>
+        </div>
+      </div>
+      {% else %}
+      <div class="schedule-item card">
+        <div>
+          <strong>No appointment records found.</strong>
+          <p>Visit the home page to request a fictional clinic visit.</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

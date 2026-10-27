@@ -55,6 +55,14 @@ class Settings(BaseSettings):
     SESSION_COOKIE_SAMESITE: str = Field(default="lax", description="SameSite policy for session cookies")
     LOGIN_RATE_LIMIT_ATTEMPTS: int = Field(default=5, description="Max failed login attempts before lockout")
     LOGIN_RATE_LIMIT_WINDOW_SECONDS: int = Field(default=60, description="Lockout evaluation window in seconds")
+    TRUSTED_PROXIES: List[str] = Field(
+        default=["127.0.0.1", "::1", "localhost", "testclient"],
+        description="List of trusted reverse proxy IP addresses from which X-Forwarded-For headers are accepted",
+    )
+    MFA_ENFORCED_FOR_PRIVILEGED: bool = Field(
+        default=True,
+        description="Whether MFA is strictly enforced for privileged roles (ADMIN, OPERATOR)",
+    )
 
     # SOAR Engine & Timeouts
     COMMAND_TTL_SECONDS: int = Field(default=60, description="Expiration time for queued agent commands")

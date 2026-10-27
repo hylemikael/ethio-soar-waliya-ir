@@ -465,37 +465,37 @@ export const SoarAuditLedger: React.FC = () => {
   const getPlanRiskBadge = (risk: string) => {
     switch (risk) {
       case 'DESTRUCTIVE':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950/80 border border-rose-800 text-rose-300">DESTRUCTIVE</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-red-50 border border-red-200 text-red-700">DESTRUCTIVE</span>;
       case 'CONTAINMENT':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950/80 border border-amber-800 text-amber-300">CONTAINMENT</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 border border-amber-200 text-amber-700">CONTAINMENT</span>;
       case 'REVERSIBLE':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/80 border border-emerald-800 text-emerald-300">REVERSIBLE</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700">REVERSIBLE</span>;
       case 'READ_ONLY':
       default:
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-950/80 border border-sky-800 text-sky-300">READ_ONLY</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 border border-blue-200 text-blue-700">READ_ONLY</span>;
     }
   };
 
   const getPlanStatusBadge = (status: string) => {
     switch (status) {
       case 'DRAFT':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 border border-slate-700 text-slate-300">DRAFT</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 border border-gray-200 text-gray-700">DRAFT</span>;
       case 'PENDING_APPROVAL':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-900/60 border border-amber-500/60 text-amber-300 animate-pulse">PENDING APPROVAL</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 border border-amber-200 text-amber-700">PENDING APPROVAL</span>;
       case 'APPROVED':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-900/60 border border-emerald-500/60 text-emerald-300">APPROVED</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700">APPROVED</span>;
       case 'EXECUTING':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-900/60 border border-blue-500/60 text-blue-300 animate-pulse">EXECUTING</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 border border-blue-200 text-blue-700">EXECUTING</span>;
       case 'SUCCEEDED':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-900/80 border border-emerald-500 text-emerald-200">SUCCEEDED</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700">SUCCEEDED</span>;
       case 'FAILED':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-900/80 border border-red-500 text-red-200">FAILED</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-red-50 border border-red-200 text-red-700">FAILED</span>;
       case 'REJECTED':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-950 border border-rose-800 text-rose-400">REJECTED</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 border border-gray-200 text-gray-700">REJECTED</span>;
       case 'CANCELLED':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 border border-slate-700 text-slate-400">CANCELLED</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 border border-gray-200 text-gray-500">CANCELLED</span>;
       default:
-        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-300">{status}</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-700 border border-gray-200">{status}</span>;
     }
   };
 
@@ -503,77 +503,77 @@ export const SoarAuditLedger: React.FC = () => {
     switch (status) {
       case 'PENDING_APPROVAL':
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-950/80 text-amber-300 border border-amber-800/60">
+          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
             PENDING APPROVAL
           </span>
         );
       case 'QUEUED':
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-950/80 text-blue-300 border border-blue-800/60">
+          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
             QUEUED
           </span>
         );
       case 'EXECUTED':
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-950/80 text-purple-300 border border-purple-800/60">
+          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">
             EXECUTED
           </span>
         );
       case 'VERIFYING':
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 animate-pulse">
+          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
             VERIFYING PROBE
           </span>
         );
       case 'VERIFIED_CONTAINED':
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-950 text-emerald-300 border border-emerald-700/70 flex items-center space-x-1">
-            <ShieldCheck className="w-3 h-3 text-emerald-400" />
+          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center space-x-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
             <span>VERIFIED CONTAINED</span>
           </span>
         );
       case 'VERIFICATION_INCONCLUSIVE':
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-950/80 text-amber-300 border border-amber-700/70 flex items-center space-x-1">
-            <AlertTriangle className="w-3 h-3 text-amber-400" />
+          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 flex items-center space-x-1">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
             <span>INCONCLUSIVE / DRY-RUN</span>
           </span>
         );
       case 'FAILED':
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-red-950/80 text-red-300 border border-red-800/60">
+          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-red-50 text-red-700 border border-red-200">
             FAILED
           </span>
         );
       case 'TIMED_OUT':
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-orange-950/80 text-orange-300 border border-orange-800/60 flex items-center space-x-1">
-            <Clock className="w-3 h-3 text-orange-400" />
+          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 flex items-center space-x-1">
+            <Clock className="w-3.5 h-3.5 text-amber-600" />
             <span>TIMED OUT</span>
           </span>
         );
       case 'OUTCOME_UNCERTAIN':
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-950/90 text-amber-300 border border-amber-600/80 flex items-center space-x-1">
-            <AlertTriangle className="w-3 h-3 text-amber-400" />
+          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 flex items-center space-x-1">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
             <span>OUTCOME UNCERTAIN</span>
           </span>
         );
       case 'REJECTED':
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+          <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
             REJECTED
           </span>
         );
       case 'EXPIRED':
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-900 text-slate-500 border border-slate-800">
+          <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200">
             EXPIRED
           </span>
         );
       default:
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-surface-elevated text-slate-400">
+          <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
             {status}
           </span>
         );

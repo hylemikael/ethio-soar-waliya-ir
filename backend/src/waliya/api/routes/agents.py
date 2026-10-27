@@ -21,7 +21,7 @@ from waliya.contracts import (
     VerificationResultResponse,
     VerificationTelemetryRequest,
 )
-from waliya.core.auth import get_authenticated_agent, verify_admin_key
+from waliya.core.auth import get_authenticated_agent, verify_viewer_or_above
 from waliya.core.crypto import compute_command_signature, decrypt_agent_secret
 from waliya.db.models import AgentModel, ResponseActionModel
 from waliya.db.session import get_db_session
@@ -40,7 +40,7 @@ verification_engine = ClosedLoopVerificationEngine()
     summary="List registered endpoint agents",
 )
 async def list_agents(
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> List[Dict[str, Any]]:
     """List all registered Linux endpoint agents."""

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Waliya Medical Center | Staff Dashboard{% endblock %}
+
+{% block content %}
+<section class="section page-section">
+  <div class="container dashboard-header">
+    <div>
+      <span class="section-tag">Protected staff dashboard</span>
+      <h1>Welcome, {{ session['full_name'] }}</h1>
+    </div>
+    <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container dashboard-grid two-up">
+    <div class="card info-panel">
+      <h3>Recent access events</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Outcome</th>
+            <th>IP</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for login in recent_logins %}
+          <tr>
+            <td>{{ login.username }}</td>
+            <td>{{ login.outcome }}</td>
+            <td>{{ login.source_ip }}</td>
+            <td>{{ login.created_at }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4">No login records available.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card info-panel">
+      <h3>Upcoming appointments</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Patient</th>
+            <th>Service</th>
+            <th>Doctor</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for appointment in appointments %}
+          <tr>
+            <td>{{ appointment.patient_name }}</td>
+            <td>{{ appointment.service }}</td>
+            <td>{{ appointment.doctor }}</td>
+            <td>{{ appointment.appointment_date }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4">No appointments scheduled.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -91,6 +91,35 @@ BUILTIN_PLAYBOOKS: List[PlaybookSchema] = [
         requires_approval=True,
         is_active=True,
     ),
+    PlaybookSchema(
+        playbook_id=UUID("11111111-2222-3333-4444-555555555553"),
+        name="PLAYBOOK-WEBSITE-DEFACEMENT-RECOVERY",
+        description="Recovers defaced website files from verified backups with evidence quarantine.",
+        trigger_conditions=[
+            RuleCondition(
+                field="severity",
+                operator="IN",
+                value=["HIGH", "CRITICAL"],
+            )
+        ],
+        action_steps=[
+            PlaybookActionStep(
+                step_id="step-1-recover-website-file",
+                action=ResponseActionEnum.RECOVER_WEBSITE_FILE,
+                parameters={
+                    "target_file": "{target_file}",
+                    "backup_file": "{backup_file}",
+                    "expected_hash": "{expected_hash}",
+                    "quarantine_directory": "{quarantine_directory}",
+                    "web_root": "{web_root}",
+                },
+                requires_approval=True,
+                timeout_seconds=60,
+            )
+        ],
+        requires_approval=True,
+        is_active=True,
+    ),
 ]
 
 

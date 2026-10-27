@@ -81,7 +81,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-slate-100">
+    <div className="min-h-screen flex flex-col bg-white text-[#222222]">
       <Header
         activeWorkspace={activeWorkspace}
         onSelectWorkspace={handleSelectWorkspace}
@@ -117,8 +117,8 @@ export const App: React.FC = () => {
         {activeWorkspace === 'soar' && <SoarAuditLedger />}
       </main>
 
-      <footer className="border-t border-border bg-[#0a0f1d] px-6 py-3 text-center text-xs text-slate-500">
-        Waliya-IR Platform Architecture &bull; Competition-Grade Linux-First SOAR & Incident Response &bull; v2.0
+      <footer className="border-t border-gray-200 bg-[#F7F7F7] px-6 py-3 text-center text-xs text-gray-500">
+        Waliya-IR Platform &bull; Security Operations & Incident Response &bull; v2.0
       </footer>
 
       <LoginModal

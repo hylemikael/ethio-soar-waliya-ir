@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Waliya Medical Center{% endblock %}</title>
+    <meta name="description" content="Waliya Medical Center is a fictional hospital demonstration site for the Ethio-SOAR platform." />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container nav">
+        <div class="brand-wrap">
+          <div class="brand-mark">+</div>
+          <div>
+            <div class="brand-name">Waliya Medical Center</div>
+            <div class="brand-tagline">Compassionate care, trusted expertise</div>
+          </div>
+        </div>
+        <nav class="nav-links">
+          <a href="{{ url_for('home') }}">Home</a>
+          <a href="{{ url_for('services') }}">Services</a>
+          <a href="#appointment">Appointments</a>
+          <a href="{{ url_for('patient_login') }}">Patient Login</a>
+          <a href="{{ url_for('staff_login') }}">Staff Login</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-grid">
+        <div>
+          <h4>Waliya Medical Center</h4>
+          <p>Fictional demonstration hospital built for the Ethio-SOAR Waliya-IR security showcase.</p>
+        </div>
+        <div>
+          <h4>Visit</h4>
+          <p>12 Health Avenue<br />Addis Ababa, Ethiopia</p>
+        </div>
+        <div>
+          <h4>Call</h4>
+          <p>+251 11 555 0180</p>
+        </div>
+        <div>
+          <h4>Hours</h4>
+          <p>Mon-Sat: 8:00 AM - 8:00 PM</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

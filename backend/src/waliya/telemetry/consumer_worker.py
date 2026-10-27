@@ -16,7 +16,7 @@ from sqlalchemy.orm import make_transient
 from waliya.analytics.ewma_engine import EWMAAnalyticsEngine
 from waliya.config import settings
 from waliya.correlation.graph_engine import EntityGraphManager, get_graph_manager
-from waliya.db.models import FindingModel, RuleModel
+from waliya.db.models import AgentModel, FindingModel, RuleModel
 from waliya.db.session import async_session_factory
 from waliya.detection.builtin_rules import seed_builtin_rules
 from waliya.detection.rule_engine import RuleEngine
@@ -242,10 +242,19 @@ class TelemetryConsumerWorker:
                     acknowledged_count += 1
                     continue
 
-                if isinstance(event_data, dict):
-                    norm = event_data.get("normalized")
-                    if isinstance(norm, dict) and "attributes" in norm and "attributes" not in event_data:
-                        event_data["attributes"] = norm["attributes"]
+                if not isinstance(event_data, dict):
+                    logger.warning("Non-object event in message %s; routing to DLQ", msg_id)
+                    await redis.xadd(
+                        DLQ_STREAM,
+                        {"data": str(raw_data_str), "error": "INVALID_EVENT_OBJECT", "original_id": str(msg_id)},
+                    )
+                    await redis.xack(self.stream_name, self.group_name, msg_id)
+                    acknowledged_count += 1
+                    continue
+
+                norm = event_data.get("normalized")
+                if isinstance(norm, dict) and "attributes" in norm and "attributes" not in event_data:
+                    event_data["attributes"] = norm["attributes"]
 
                 event_id_str = event_data.get("event_id")
                 if not event_id_str:
@@ -256,8 +265,8 @@ class TelemetryConsumerWorker:
                     continue
 
                 try:
-                    event_id = UUID(event_id_str)
-                except ValueError:
+                    event_id = UUID(str(event_id_str))
+                except (ValueError, TypeError, AttributeError):
                     logger.warning("Invalid event_id format '%s' in message %s; routing to DLQ", event_id_str, msg_id)
                     await redis.xadd(DLQ_STREAM, {"data": raw_data_str, "error": "INVALID_EVENT_ID_UUID", "original_id": str(msg_id)})
                     await redis.xack(self.stream_name, self.group_name, msg_id)
@@ -265,20 +274,50 @@ class TelemetryConsumerWorker:
                     continue
 
                 agent_id_str = event_data.get("agent_id")
-                agent_id = UUID(agent_id_str) if agent_id_str else None
+                try:
+                    agent_id = UUID(str(agent_id_str)) if agent_id_str else None
+                except (ValueError, TypeError, AttributeError):
+                    logger.warning("Invalid agent_id in message %s; routing to DLQ", msg_id)
+                    await redis.xadd(
+                        DLQ_STREAM,
+                        {"data": raw_data_str, "error": "INVALID_AGENT_ID_UUID", "original_id": str(msg_id)},
+                    )
+                    await redis.xack(self.stream_name, self.group_name, msg_id)
+                    acknowledged_count += 1
+                    continue
+
+                # Verify agent_id exists in agents table to preserve foreign key constraints without fabricating agents
+                valid_agent_id: Optional[UUID] = None
+                if agent_id:
+                    agent_check = await session.execute(
+                        select(AgentModel.id).where(AgentModel.id == agent_id)
+                    )
+                    if agent_check.scalars().first() is not None:
+                        valid_agent_id = agent_id
+
+                attributes = event_data.get("attributes", {})
+                if not isinstance(attributes, dict):
+                    logger.warning("Invalid attributes in message %s; routing to DLQ", msg_id)
+                    await redis.xadd(
+                        DLQ_STREAM,
+                        {"data": raw_data_str, "error": "INVALID_ATTRIBUTES_OBJECT", "original_id": str(msg_id)},
+                    )
+                    await redis.xack(self.stream_name, self.group_name, msg_id)
+                    acknowledged_count += 1
+                    continue
 
                 # Detect simulation provenance upfront
                 is_sim_event = bool(
                     event_data.get("is_simulation")
-                    or event_data.get("attributes", {}).get("is_simulation")
+                    or attributes.get("is_simulation")
                 )
                 sim_run_id = (
                     event_data.get("simulation_run_id")
-                    or event_data.get("attributes", {}).get("simulation_run_id")
+                    or attributes.get("simulation_run_id")
                 )
                 trace_id = (
                     event_data.get("trace_id")
-                    or event_data.get("attributes", {}).get("trace_id")
+                    or attributes.get("trace_id")
                 )
 
                 try:
@@ -323,7 +362,7 @@ class TelemetryConsumerWorker:
                                     id=uuid4(),
                                     rule_id=rule.id,
                                     event_id=event_id,
-                                    agent_id=agent_id,
+                                    agent_id=valid_agent_id,
                                     severity=rule.severity,
                                     confidence=1.0,
                                     explanation=explanation_data,
@@ -343,7 +382,7 @@ class TelemetryConsumerWorker:
                                 id=uuid4(),
                                 rule_id=None,
                                 event_id=event_id,
-                                agent_id=agent_id,
+                                agent_id=valid_agent_id,
                                 severity=anom_severity.value,
                                 confidence=min(1.0, round(0.7 + 0.05 * (anomaly_expl.z_score - anomaly_expl.threshold), 2)),
                                 explanation=anomaly_expl.model_dump(),
@@ -374,7 +413,7 @@ class TelemetryConsumerWorker:
                                             id=uuid4(),
                                             rule_id=None,
                                             event_id=event_id,
-                                            agent_id=agent_id,
+                                            agent_id=valid_agent_id,
                                             severity=match.get("severity", "HIGH"),
                                             confidence=min(1.0, max(0.5, float(match.get("confidence", 50)) / 100.0)),
                                             explanation={
@@ -408,7 +447,16 @@ class TelemetryConsumerWorker:
                         raise
 
                     # 4. Idempotent Database Persistence with Constraint Check
+                    new_findings: List[FindingModel] = []
+                    seen_dedup_keys: set = set()
+
                     for finding in generated_findings:
+                        # De-duplicate within the event batch to prevent uq_findings_event_dedup violation
+                        if finding.dedup_key and finding.dedup_key in seen_dedup_keys:
+                            continue
+                        if finding.dedup_key:
+                            seen_dedup_keys.add(finding.dedup_key)
+
                         # Check if duplicate (event_id, dedup_key) already exists in DB
                         dup_query = select(FindingModel.id).where(
                             FindingModel.event_id == finding.event_id,
@@ -417,18 +465,19 @@ class TelemetryConsumerWorker:
                         dup_res = await session.execute(dup_query)
                         if dup_res.scalars().first() is None:
                             session.add(finding)
+                            new_findings.append(finding)
 
                     # 5. Correlate findings into persistent security incidents
-                    if generated_findings:
+                    if new_findings:
                         await self.correlation_service.correlate_findings(
                             session=session,
-                            findings=generated_findings,
+                            findings=new_findings,
                             event_data=event_data,
                             graph_manager=self.graph_manager,
                         )
 
-                    # 5b. Queue outbound notifications for detection findings and threat intel matches
-                    if not is_sim_event and generated_findings:
+                    # 5b. Queue outbound notifications ONLY for newly created detection findings and threat intel matches
+                    if not is_sim_event and new_findings:
                         try:
                             from waliya.integrations.delivery_service import NotificationDeliveryService
                             from waliya.integrations.payloads import (
@@ -436,7 +485,7 @@ class TelemetryConsumerWorker:
                                 build_detection_finding_created_payload,
                                 build_threat_intel_matched_payload,
                             )
-                            for gf in generated_findings:
+                            for gf in new_findings:
                                 expl = gf.explanation if isinstance(gf.explanation, dict) else {}
                                 if expl.get("finding_type") == "THREAT_INTEL_MATCH":
                                     ti_matches = expl.get("threat_intel_matches", [])

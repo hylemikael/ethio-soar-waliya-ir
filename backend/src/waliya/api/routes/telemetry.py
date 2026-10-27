@@ -7,7 +7,11 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from waliya.contracts import EventBatchRequest, EventBatchResponse
-from waliya.core.auth import get_authenticated_agent, verify_admin_key
+from waliya.core.auth import (
+    get_authenticated_agent,
+    verify_operator_or_admin,
+    verify_viewer_or_above,
+)
 from waliya.db.models import AgentModel, EventOutboxModel
 from waliya.db.session import get_db_session
 from waliya.telemetry.ingestion import process_telemetry_batch
@@ -60,7 +64,7 @@ async def ingest_telemetry(
     summary="Get current transactional outbox status metrics",
 )
 async def get_outbox_status(
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> Dict[str, Any]:
     """Return observable metrics on pending, published, and failed outbox records."""
@@ -87,7 +91,7 @@ async def get_outbox_status(
     summary="Trigger immediate flush of pending or failed outbox events",
 )
 async def flush_outbox(
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_operator_or_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> Dict[str, Any]:
     """Force an outbox publication iteration to recover pending or failed events."""

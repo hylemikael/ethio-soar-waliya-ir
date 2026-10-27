@@ -13,7 +13,7 @@ from waliya.contracts import (
     GraphNode,
     GraphSnapshot,
 )
-from waliya.core.auth import verify_admin_key
+from waliya.core.auth import verify_operator_or_admin, verify_viewer_or_above
 from waliya.correlation.graph_engine import get_graph_manager
 
 logger = logging.getLogger("waliya.api.routes.correlation")
@@ -32,7 +32,7 @@ async def get_graph_snapshot(
     max_edges: int = Query(default=500, ge=1, le=2000),
     center_node: Optional[str] = Query(default=None, description="Optional entity node ID to extract ego subgraph around"),
     depth: int = Query(default=2, ge=1, le=5),
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
 ) -> GraphSnapshot:
     """Export the active in-memory entity correlation graph or a specific entity subgraph."""
     graph_manager = get_graph_manager()
@@ -53,7 +53,7 @@ async def get_graph_snapshot(
 async def get_correlation_attack_paths(
     max_depth: int = Query(default=4, ge=1, le=6),
     max_paths: int = Query(default=10, ge=1, le=20),
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
 ) -> List[AttackPath]:
     """Discover directed attack progressions connecting entry nodes to impacted assets."""
     graph_manager = get_graph_manager()
@@ -71,7 +71,7 @@ async def get_paths_between_entities(
     target: str = Query(..., min_length=1, max_length=255, description="Target entity ID"),
     max_depth: int = Query(default=4, ge=1, le=6),
     limit: int = Query(default=5, ge=1, le=20),
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
 ) -> CorrelationPathResponse:
     """Find simple paths connecting a source entity to a target entity within bounded depth."""
     graph_manager = get_graph_manager()
@@ -99,7 +99,7 @@ async def get_entity_neighbors(
     entity_id: str,
     depth: int = Query(default=1, ge=1, le=4),
     max_neighbors: int = Query(default=50, ge=1, le=200),
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
 ) -> EntityNeighborsResponse:
     """Return an entity's 1-hop or k-hop neighborhood with supporting edges and degrees."""
     graph_manager = get_graph_manager()
@@ -124,7 +124,7 @@ async def get_entity_neighbors(
 )
 async def get_entity_node(
     entity_id: str,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
 ) -> GraphNode:
     """Retrieve metadata, timestamps, and observation count for a specific entity."""
     graph_manager = get_graph_manager()
@@ -152,7 +152,7 @@ async def get_entity_node(
     summary="Get correlation graph statistics",
 )
 async def get_graph_stats(
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
 ) -> Dict[str, Any]:
     """Return structural node and edge counts and memory boundaries for the entity graph."""
     graph_manager = get_graph_manager()
@@ -166,7 +166,7 @@ async def get_graph_stats(
     summary="Trigger immediate graph pruning of expired entities and relationships",
 )
 async def trigger_graph_prune(
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_operator_or_admin),
 ) -> Dict[str, Any]:
     """Manually invoke sliding-window retention pruning on the entity graph."""
     graph_manager = get_graph_manager()

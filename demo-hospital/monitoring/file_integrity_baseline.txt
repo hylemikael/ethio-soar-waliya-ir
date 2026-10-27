@@ -1,0 +1,5 @@
+# Waliya Medical Center - sample file integrity baseline
+# This is a harmless demonstration file for local monitoring only.
+app.py: sha256=demo-placeholder
+templates/index.html: sha256=demo-placeholder
+static/style.css: sha256=demo-placeholder

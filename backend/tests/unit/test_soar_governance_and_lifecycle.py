@@ -52,10 +52,11 @@ def sample_actions():
 
 
 def test_action_registry_completeness_and_risk_ordering():
-    """Verify registry contains all 7 actions with appropriate risk ratings."""
-    assert len(ACTION_REGISTRY) == 7
+    """Verify registry contains all allowlisted actions with appropriate risk ratings."""
+    assert len(ACTION_REGISTRY) == 8
     assert ResponseActionRegistry.is_supported("BLOCK_IP")
     assert ResponseActionRegistry.is_supported("TERMINATE_PROCESS")
+    assert ResponseActionRegistry.is_supported("RECOVER_WEBSITE_FILE")
     assert not ResponseActionRegistry.is_supported("FORMAT_HARD_DRIVE")
 
     # Risk classifications

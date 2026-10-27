@@ -2,6 +2,7 @@
 
 import ipaddress
 import logging
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger("waliya_agent.response.validator")
@@ -122,4 +123,78 @@ class ActionValidator:
         return {
             "artifact_type": atype,
             "destination_path": dest_path,
+        }
+
+    @classmethod
+    def validate_recover_website_file(
+        cls,
+        parameters: Dict[str, Any],
+        default_web_root: Optional[Path] = None,
+        default_backup_dir: Optional[Path] = None,
+        default_quarantine_dir: Optional[Path] = None,
+    ) -> Dict[str, Any]:
+        """Validate website file recovery parameters with strict containment checks."""
+        raw_target = parameters.get("target_file")
+        if not raw_target or not isinstance(raw_target, str) or not raw_target.strip():
+            raise ValueError("RECOVER_WEBSITE_FILE requires a non-empty string 'target_file'")
+
+        raw_backup = parameters.get("backup_file")
+        if not raw_backup or not isinstance(raw_backup, str) or not raw_backup.strip():
+            raise ValueError("RECOVER_WEBSITE_FILE requires a non-empty string 'backup_file'")
+
+        raw_hash = parameters.get("expected_hash")
+        if not raw_hash or not isinstance(raw_hash, str) or not raw_hash.strip():
+            raise ValueError("RECOVER_WEBSITE_FILE requires a non-empty string 'expected_hash'")
+
+        clean_hash = raw_hash.strip().lower()
+        if len(clean_hash) != 64 or not all(c in "0123456789abcdef" for c in clean_hash):
+            raise ValueError(f"Invalid expected_hash format: '{raw_hash}'. Must be 64 hex characters (SHA-256).")
+
+        raw_web_root = parameters.get("web_root")
+        web_root = Path(raw_web_root).resolve() if raw_web_root else (default_web_root or Path("/var/www/html")).resolve()
+
+        raw_quarantine = parameters.get("quarantine_directory")
+        quarantine_dir = Path(raw_quarantine).resolve() if raw_quarantine else (default_quarantine_dir or Path("./data/quarantine")).resolve()
+
+        # Path traversal checks
+        for p_str, field in [
+            (raw_target, "target_file"),
+            (raw_backup, "backup_file"),
+            (raw_web_root, "web_root"),
+            (raw_quarantine, "quarantine_directory"),
+        ]:
+            if p_str and ".." in str(p_str):
+                raise ValueError(f"Prohibited path traversal sequence '..' in '{field}': '{p_str}'")
+
+        target_path = Path(raw_target.strip()).resolve()
+        backup_path = Path(raw_backup.strip()).resolve()
+
+        # Target file MUST reside inside web_root
+        try:
+            target_path.relative_to(web_root)
+        except ValueError:
+            raise ValueError(
+                f"Prohibited directory escape: target_file '{target_path}' is outside web_root '{web_root}'"
+            )
+
+        # Disallow targeting critical system paths or directories
+        if target_path.is_dir():
+            raise ValueError(f"Target path '{target_path}' is a directory, expected a file")
+
+        # Symlink escape defense
+        if target_path.is_symlink():
+            real_target = target_path.resolve()
+            try:
+                real_target.relative_to(web_root)
+            except ValueError:
+                raise ValueError(
+                    f"Prohibited symlink escape: target_file '{target_path}' resolves outside web_root to '{real_target}'"
+                )
+
+        return {
+            "target_file": str(target_path),
+            "backup_file": str(backup_path),
+            "expected_hash": clean_hash,
+            "web_root": str(web_root),
+            "quarantine_directory": str(quarantine_dir),
         }

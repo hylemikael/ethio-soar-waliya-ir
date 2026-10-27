@@ -331,40 +331,40 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
   const getSeverityBadge = (sev: Severity) => {
     switch (sev) {
       case 'CRITICAL':
-        return 'bg-red-950/80 text-red-300 border-red-800';
+        return 'bg-red-50 text-red-700 border-red-200';
       case 'HIGH':
-        return 'bg-orange-950/80 text-orange-300 border-orange-800';
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'MEDIUM':
-        return 'bg-yellow-950/80 text-yellow-300 border-yellow-800';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'LOW':
-        return 'bg-blue-950/80 text-blue-300 border-blue-800';
+        return 'bg-gray-50 text-gray-700 border-gray-200';
       default:
-        return 'bg-slate-800 text-slate-300 border-slate-700';
+        return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
 
   const getStatusBadge = (st: IncidentStatus) => {
     switch (st) {
       case 'OPEN':
-        return 'bg-red-950 text-red-400 border-red-800';
+        return 'bg-red-50 text-red-700 border-red-200';
       case 'INVESTIGATING':
-        return 'bg-amber-950 text-amber-400 border-amber-800';
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'CONTAINED':
-        return 'bg-purple-950 text-purple-400 border-purple-800';
+        return 'bg-purple-50 text-purple-700 border-purple-200';
       case 'RESOLVED':
-        return 'bg-emerald-950 text-emerald-400 border-emerald-800';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'CLOSED':
-        return 'bg-slate-900 text-slate-400 border-slate-700';
+        return 'bg-gray-100 text-gray-700 border-gray-200';
       default:
-        return 'bg-slate-800 text-slate-300 border-slate-700';
+        return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
 
   const getRiskScoreColor = (score: number) => {
-    if (score >= 80) return 'text-red-400';
-    if (score >= 60) return 'text-orange-400';
-    if (score >= 40) return 'text-yellow-400';
-    return 'text-emerald-400';
+    if (score >= 80) return 'text-red-600 font-bold';
+    if (score >= 60) return 'text-amber-600 font-semibold';
+    if (score >= 40) return 'text-yellow-600 font-medium';
+    return 'text-emerald-600';
   };
 
   return (
@@ -415,18 +415,18 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
 
           {/* Search Box */}
           <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-500" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-gray-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search title, ID, number..."
-              className="w-full pl-9 pr-8 py-2 bg-surface-elevated border border-border rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full pl-9 pr-8 py-2 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-2.5 text-slate-500 hover:text-white"
+                className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -444,7 +444,7 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
                   className={`px-2.5 py-1 rounded text-[10px] font-semibold transition-colors shrink-0 ${
                     severityFilter === sev
                       ? 'bg-blue-600 text-white'
-                      : 'bg-surface-elevated text-slate-400 hover:text-slate-200'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {sev}
@@ -454,11 +454,11 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
 
             {/* Status Filter Dropdown */}
             <div className="flex items-center space-x-2 text-xs">
-              <span className="text-slate-400 text-[11px]">Status:</span>
+              <span className="text-gray-500 text-xs">Status:</span>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="flex-1 bg-surface-elevated border border-border rounded px-2 py-1 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="flex-1 bg-white border border-gray-300 rounded px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm"
               >
                 <option value="ALL">All Statuses</option>
                 <option value="OPEN">OPEN</option>
@@ -475,7 +475,7 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
             {listLoading && incidents.length === 0 ? (
               <div className="space-y-2 animate-pulse">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-20 bg-surface-elevated rounded-lg border border-border" />
+                  <div key={i} className="h-20 bg-gray-50 rounded-lg border border-gray-200" />
                 ))}
               </div>
             ) : filteredIncidents.length === 0 ? (
@@ -493,17 +493,17 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
                     onClick={() => setSelectedIncidentId(inc.incident_id)}
                     className={`p-3 rounded-lg border cursor-pointer transition-all ${
                       isSelected
-                        ? 'bg-blue-950/40 border-blue-500/80 shadow-md ring-1 ring-blue-500/30'
-                        : 'bg-surface-elevated/40 border-border/80 hover:bg-surface-elevated/70'
+                        ? 'bg-blue-50/80 border-blue-500 shadow-sm border-l-4'
+                        : 'bg-white border-gray-200 hover:bg-gray-50'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center space-x-1.5">
-                        <span className="font-mono text-xs font-bold text-white">
+                        <span className="font-mono text-xs font-bold text-gray-900">
                           #{inc.incident_number}
                         </span>
                         {(inc.is_simulation || inc.title.startsWith("[SIMULATION]")) && (
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800/60 font-mono">
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-50 text-purple-700 border border-purple-200 font-mono">
                             SIMULATED
                           </span>
                         )}
@@ -526,11 +526,11 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
                       </div>
                     </div>
 
-                    <h4 className="text-xs font-semibold text-slate-200 line-clamp-1 mb-1.5">
+                    <h4 className="text-xs font-semibold text-gray-900 line-clamp-1 mb-1.5">
                       {inc.title}
                     </h4>
 
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                    <div className="flex items-center justify-between text-xs text-gray-500 font-mono">
                       <span>
                         Risk:{' '}
                         <span className={`font-bold ${getRiskScoreColor(inc.composite_risk_score)}`}>
@@ -540,11 +540,11 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
                       <span>{inc.findings_count} findings</span>
                     </div>
 
-                    <div className="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
+                    <div className="text-[11px] text-gray-400 mt-1 flex items-center justify-between">
                       <span>
                         {inc.last_seen ? new Date(inc.last_seen).toLocaleDateString() : 'Active'}
                       </span>
-                      <span className="text-blue-400 hover:underline flex items-center space-x-0.5">
+                      <span className="text-blue-600 hover:underline flex items-center space-x-0.5">
                         <span>Details</span>
                         <ArrowRight className="w-3 h-3" />
                       </span>
@@ -2051,18 +2051,18 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
 
       {/* Forensic Evidence Detail Drawer */}
       {selectedReconItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg h-full bg-[#0d1322] border-l border-border shadow-2xl p-6 overflow-y-auto space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-border">
+        <div className="fixed inset-0 z-50 flex items-center justify-end bg-gray-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg h-full bg-white border-l border-gray-200 shadow-2xl p-6 overflow-y-auto space-y-5 text-gray-900">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-200">
               <div className="space-y-0.5">
-                <span className="text-[10px] font-mono uppercase font-bold text-slate-400">
+                <span className="text-[10px] font-mono uppercase font-bold text-gray-500">
                   Forensic Observation Details
                 </span>
-                <h3 className="text-sm font-bold text-white">{selectedReconItem.title}</h3>
+                <h3 className="text-sm font-bold text-gray-900">{selectedReconItem.title}</h3>
               </div>
               <button
                 onClick={() => setSelectedReconItem(null)}
-                className="text-slate-400 hover:text-white p-1 rounded hover:bg-surface"
+                className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2072,8 +2072,8 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
             <div
               className={`p-3 rounded-lg border text-xs leading-relaxed ${
                 selectedReconItem.is_interpretation
-                  ? 'bg-purple-950/40 border-purple-500/30 text-purple-200'
-                  : 'bg-blue-950/40 border-blue-500/30 text-blue-200'
+                  ? 'bg-purple-50 border-purple-200 text-purple-900'
+                  : 'bg-blue-50 border-blue-200 text-blue-900'
               }`}
             >
               <strong>
@@ -2089,13 +2089,13 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
             {/* Properties */}
             <div className="space-y-3 text-xs">
               <div>
-                <span className="text-slate-400 block text-[10px] font-mono uppercase font-bold">Identifier</span>
-                <span className="font-mono text-slate-200 break-all">{selectedReconItem.item_id}</span>
+                <span className="text-gray-500 block text-[10px] font-mono uppercase font-bold">Identifier</span>
+                <span className="font-mono text-gray-800 break-all">{selectedReconItem.item_id}</span>
               </div>
 
               <div>
-                <span className="text-slate-400 block text-[10px] font-mono uppercase font-bold">Timestamp</span>
-                <span className="font-mono text-slate-200">
+                <span className="text-gray-500 block text-[10px] font-mono uppercase font-bold">Timestamp</span>
+                <span className="font-mono text-gray-800">
                   {selectedReconItem.timestamp
                     ? new Date(selectedReconItem.timestamp).toISOString()
                     : 'Not Available'}
@@ -2103,25 +2103,25 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
               </div>
 
               <div>
-                <span className="text-slate-400 block text-[10px] font-mono uppercase font-bold">Source Component</span>
-                <span className="font-mono text-slate-200">{selectedReconItem.source}</span>
+                <span className="text-gray-500 block text-[10px] font-mono uppercase font-bold">Source Component</span>
+                <span className="font-mono text-gray-800">{selectedReconItem.source}</span>
               </div>
 
               <div>
-                <span className="text-slate-400 block text-[10px] font-mono uppercase font-bold">Explanation</span>
-                <p className="text-slate-200 leading-relaxed mt-0.5">{selectedReconItem.explanation}</p>
+                <span className="text-gray-500 block text-[10px] font-mono uppercase font-bold">Explanation</span>
+                <p className="text-gray-700 leading-relaxed mt-0.5">{selectedReconItem.explanation}</p>
               </div>
 
               {selectedReconItem.associated_entity_ids.length > 0 && (
                 <div>
-                  <span className="text-slate-400 block text-[10px] font-mono uppercase font-bold">
+                  <span className="text-gray-500 block text-[10px] font-mono uppercase font-bold">
                     Associated Entities
                   </span>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {selectedReconItem.associated_entity_ids.map((ent) => (
                       <span
                         key={ent}
-                        className="font-mono text-[11px] bg-surface text-slate-200 px-2 py-0.5 rounded border border-border"
+                        className="font-mono text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded border border-gray-200"
                       >
                         {ent}
                       </span>
@@ -2132,16 +2132,16 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
 
               {selectedReconItem.mitre_techniques.length > 0 && (
                 <div>
-                  <span className="text-slate-400 block text-[10px] font-mono uppercase font-bold">
+                  <span className="text-gray-500 block text-[10px] font-mono uppercase font-bold">
                     MITRE ATT&CK Techniques
                   </span>
                   <div className="space-y-1.5 mt-1">
                     {selectedReconItem.mitre_techniques.map((tech) => (
                       <div
                         key={tech.technique_id}
-                        className="p-2 bg-surface rounded border border-purple-500/30 flex items-center justify-between"
+                        className="p-2 bg-purple-50 rounded border border-purple-200 flex items-center justify-between"
                       >
-                        <span className="font-mono text-purple-300 font-bold">
+                        <span className="font-mono text-purple-900 font-bold">
                           {tech.technique_id} - {tech.technique_name}
                         </span>
                         {tech.reference_url && (
@@ -2149,7 +2149,7 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
                             href={tech.reference_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-purple-400 hover:text-purple-300 inline-flex items-center space-x-1"
+                            className="text-purple-700 hover:text-purple-900 inline-flex items-center space-x-1"
                           >
                             <ExternalLink className="w-3 h-3" />
                           </a>
@@ -2162,10 +2162,10 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
 
               {Object.keys(selectedReconItem.raw_attributes).length > 0 && (
                 <div>
-                  <span className="text-slate-400 block text-[10px] font-mono uppercase font-bold">
+                  <span className="text-gray-500 block text-[10px] font-mono uppercase font-bold">
                     Telemetry Attributes
                   </span>
-                  <pre className="mt-1 p-2 bg-surface rounded border border-border font-mono text-[11px] text-slate-300 overflow-x-auto">
+                  <pre className="mt-1 p-2 bg-gray-50 rounded border border-gray-200 font-mono text-xs text-gray-800 overflow-x-auto">
                     {JSON.stringify(selectedReconItem.raw_attributes, null, 2)}
                   </pre>
                 </div>
@@ -2173,8 +2173,8 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
             </div>
 
             {/* Quick-Jump Actions */}
-            <div className="pt-4 border-t border-border space-y-2">
-              <span className="text-[10px] font-mono uppercase font-bold text-slate-400 block">
+            <div className="pt-4 border-t border-gray-200 space-y-2">
+              <span className="text-[10px] font-mono uppercase font-bold text-gray-500 block">
                 Quick-Jump Investigation Actions
               </span>
               <div className="grid grid-cols-2 gap-2">
@@ -2184,7 +2184,7 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
                     setActiveTab('timeline');
                     setSelectedReconItem(null);
                   }}
-                  className="px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 rounded text-xs font-semibold"
+                  className="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded text-xs font-semibold"
                 >
                   Jump to Timeline
                 </button>
@@ -2193,7 +2193,7 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
                     setActiveTab('graph');
                     setSelectedReconItem(null);
                   }}
-                  className="px-3 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 rounded text-xs font-semibold"
+                  className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded text-xs font-semibold"
                 >
                   Jump to Attack Graph
                 </button>
@@ -2205,31 +2205,31 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
 
       {/* Status Transition Modal */}
       {isStatusModalOpen && incidentDetail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md bg-[#0d1322] border border-border rounded-xl shadow-2xl p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-white border border-gray-200 rounded-lg shadow-xl p-6 relative">
             <button
               onClick={() => setIsStatusModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <h3 className="text-base font-bold text-white mb-1">
+            <h3 className="text-base font-bold text-gray-900 mb-1">
               Transition Status: #{incidentDetail.incident_number}
             </h3>
-            <p className="text-xs text-slate-400 mb-4">
-              Current lifecycle state: <strong className="text-white">{incidentDetail.status}</strong>
+            <p className="text-xs text-gray-500 mb-4">
+              Current lifecycle state: <strong className="text-gray-900">{incidentDetail.status}</strong>
             </p>
 
             <form onSubmit={handleStatusSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">
                   Target Status
                 </label>
                 <select
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value as IncidentStatus)}
-                  className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 >
                   <option value="OPEN">OPEN</option>
                   <option value="INVESTIGATING">INVESTIGATING</option>
@@ -2240,7 +2240,7 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">
                   Investigation Note (Optional)
                 </label>
                 <textarea
@@ -2249,12 +2249,12 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
                   placeholder="Provide forensic findings, containment rationale, or mitigation details..."
                   rows={3}
                   maxLength={1000}
-                  className="w-full bg-surface border border-border rounded-lg p-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full bg-white border border-gray-300 rounded p-2.5 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
                 />
               </div>
 
               {(newStatus === 'RESOLVED' || newStatus === 'CLOSED') && (
-                <div className="p-3 bg-amber-950/40 border border-amber-800/60 rounded-lg text-[11px] text-amber-300">
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
                   Resolving or closing this incident records a closure timestamp in the audit ledger.
                 </div>
               )}
@@ -2263,14 +2263,14 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsStatusModalOpen(false)}
-                  className="px-4 py-2 rounded-lg text-xs font-medium text-slate-400 hover:bg-surface-elevated"
+                  className="px-4 py-2 rounded text-xs font-medium text-gray-600 hover:bg-gray-100 border border-gray-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={statusSubmitting}
-                  className="px-5 py-2 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-colors disabled:opacity-50"
+                  className="px-5 py-2 rounded text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-50"
                 >
                   {statusSubmitting ? 'Updating...' : 'Confirm Transition'}
                 </button>
@@ -2282,32 +2282,32 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
 
       {/* Explainable Risk Modal */}
       {isRiskModalOpen && incidentDetail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg bg-[#0d1322] border border-border rounded-xl shadow-2xl p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg bg-white border border-gray-200 rounded-lg shadow-xl p-6 relative">
             <button
               onClick={() => setIsRiskModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center space-x-3 mb-4">
-              <div className="p-2.5 rounded-lg bg-blue-600/15 border border-blue-500/30 text-blue-400">
+              <div className="p-2.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-600">
                 <Activity className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">
+                <h3 className="text-base font-bold text-gray-900">
                   Explainable Risk Score Breakdown
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-gray-500">
                   Mathematical derivation for Incident #{incidentDetail.incident_number}
                 </p>
               </div>
             </div>
 
             <div className="space-y-4">
-              <div className="p-3.5 rounded-lg bg-blue-950/40 border border-blue-800/60 flex items-center justify-between">
-                <span className="text-xs font-semibold text-white">Composite Risk Score</span>
+              <div className="p-3.5 rounded-lg bg-blue-50/70 border border-blue-200 flex items-center justify-between">
+                <span className="text-xs font-semibold text-gray-900">Composite Risk Score</span>
                 <span
                   className={`text-2xl font-black font-mono ${getRiskScoreColor(
                     incidentDetail.composite_risk_score
@@ -2319,54 +2319,54 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
 
               {/* Factors Grid */}
               <div className="grid grid-cols-2 gap-2.5 text-xs font-mono">
-                <div className="p-2.5 bg-surface rounded border border-border/60">
-                  <span className="text-slate-400 block text-[10px]">Base Severity & Weight</span>
-                  <span className="text-white font-bold">
+                <div className="p-2.5 bg-gray-50 rounded border border-gray-200">
+                  <span className="text-gray-500 block text-[10px]">Base Severity & Weight</span>
+                  <span className="text-gray-900 font-bold">
                     {incidentDetail.risk_explanation.base_severity || 'LOW'} (
                     {incidentDetail.risk_explanation.base_weight || 30.0})
                   </span>
                 </div>
-                <div className="p-2.5 bg-surface rounded border border-border/60">
-                  <span className="text-slate-400 block text-[10px]">Confidence Factor</span>
-                  <span className="text-cyan-400 font-bold">
+                <div className="p-2.5 bg-gray-50 rounded border border-gray-200">
+                  <span className="text-gray-500 block text-[10px]">Confidence Factor</span>
+                  <span className="text-blue-700 font-bold">
                     {incidentDetail.risk_explanation.confidence_factor ?? 1.0}
                   </span>
                 </div>
-                <div className="p-2.5 bg-surface rounded border border-border/60">
-                  <span className="text-slate-400 block text-[10px]">Multi-Entity Multiplier</span>
-                  <span className="text-purple-400 font-bold">
+                <div className="p-2.5 bg-gray-50 rounded border border-gray-200">
+                  <span className="text-gray-500 block text-[10px]">Multi-Entity Multiplier</span>
+                  <span className="text-purple-700 font-bold">
                     {incidentDetail.risk_explanation.multi_entity_multiplier ?? 1.0}x
                   </span>
                 </div>
-                <div className="p-2.5 bg-surface rounded border border-border/60">
-                  <span className="text-slate-400 block text-[10px]">Multi-Stage ATT&CK Bonus</span>
-                  <span className="text-amber-400 font-bold">
+                <div className="p-2.5 bg-gray-50 rounded border border-gray-200">
+                  <span className="text-gray-500 block text-[10px]">Multi-Stage ATT&CK Bonus</span>
+                  <span className="text-amber-700 font-bold">
                     +{incidentDetail.risk_explanation.multi_stage_bonus ?? 0.0}
                   </span>
                 </div>
-                <div className="p-2.5 bg-surface rounded border border-border/60">
-                  <span className="text-slate-400 block text-[10px]">Behavioral Anomaly Bonus</span>
-                  <span className="text-rose-400 font-bold">
+                <div className="p-2.5 bg-gray-50 rounded border border-gray-200">
+                  <span className="text-gray-500 block text-[10px]">Behavioral Anomaly Bonus</span>
+                  <span className="text-red-700 font-bold">
                     +{incidentDetail.risk_explanation.anomaly_bonus ?? 0.0}
                   </span>
                 </div>
-                <div className="p-2.5 bg-surface rounded border border-border/60">
-                  <span className="text-slate-400 block text-[10px]">Threat Intel Bonus</span>
-                  <span className="text-rose-400 font-bold">
+                <div className="p-2.5 bg-gray-50 rounded border border-gray-200">
+                  <span className="text-gray-500 block text-[10px]">Threat Intel Bonus</span>
+                  <span className="text-red-700 font-bold">
                     +{incidentDetail.risk_explanation.threat_intel_bonus ?? 0.0}
                     {incidentDetail.risk_explanation.threat_intel_confidence ? ` (${incidentDetail.risk_explanation.threat_intel_confidence}%)` : ''}
                   </span>
                 </div>
-                <div className="p-2.5 bg-surface rounded border border-border/60">
-                  <span className="text-slate-400 block text-[10px]">Asset Importance Bonus</span>
-                  <span className="text-emerald-400 font-bold">
+                <div className="p-2.5 bg-gray-50 rounded border border-gray-200">
+                  <span className="text-gray-500 block text-[10px]">Asset Importance Bonus</span>
+                  <span className="text-emerald-700 font-bold">
                     +{incidentDetail.risk_explanation.asset_importance_bonus ?? 0.0}
                     {incidentDetail.risk_explanation.asset_criticality ? ` [${incidentDetail.risk_explanation.asset_criticality}]` : ''}
                   </span>
                 </div>
-                <div className="p-2.5 bg-surface rounded border border-border/60">
-                  <span className="text-slate-400 block text-[10px]">Unique / Raw Findings</span>
-                  <span className="text-blue-400 font-bold">
+                <div className="p-2.5 bg-gray-50 rounded border border-gray-200">
+                  <span className="text-gray-500 block text-[10px]">Unique / Raw Findings</span>
+                  <span className="text-blue-700 font-bold">
                     {incidentDetail.risk_explanation.unique_findings_count ?? incidentDetail.findings_count} /{' '}
                     {incidentDetail.risk_explanation.raw_findings_count ?? incidentDetail.findings_count}
                   </span>
@@ -2375,22 +2375,22 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
 
               {/* Matched Threat Intelligence Indicators in Modal */}
               {threatIntelSummary && threatIntelSummary.matches && threatIntelSummary.matches.length > 0 && (
-                <div className="p-3 bg-surface rounded-lg border border-border/60 space-y-2">
-                  <span className="text-[10px] uppercase font-mono text-rose-400 font-bold block">
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
+                  <span className="text-[10px] uppercase font-mono text-red-700 font-bold block">
                     Associated Threat Intelligence Matches ({threatIntelSummary.matches.length}):
                   </span>
                   <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
                     {threatIntelSummary.matches.map((m, idx) => (
-                      <div key={idx} className="flex items-center justify-between text-xs font-mono p-1.5 bg-surface-elevated/40 rounded border border-border/40">
+                      <div key={idx} className="flex items-center justify-between text-xs font-mono p-1.5 bg-white rounded border border-gray-200">
                         <div className="flex items-center space-x-2 truncate">
-                          <span className="text-[9px] px-1 py-0.2 bg-blue-500/20 text-blue-400 rounded">
+                          <span className="text-[9px] px-1 py-0.2 bg-blue-100 text-blue-700 rounded">
                             {m.indicator_type}
                           </span>
-                          <span className="text-white truncate max-w-[200px]">{m.value}</span>
+                          <span className="text-gray-900 truncate max-w-[200px]">{m.value}</span>
                         </div>
                         <div className="flex items-center space-x-2 text-[10px] whitespace-nowrap">
-                          <span className="text-purple-400">{m.source}</span>
-                          <span className="text-amber-400 font-bold">{m.current_confidence}%</span>
+                          <span className="text-purple-700">{m.source}</span>
+                          <span className="text-amber-700 font-bold">{m.current_confidence}%</span>
                         </div>
                       </div>
                     ))}
@@ -2399,11 +2399,11 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
               )}
 
               {/* Human-readable rationale */}
-              <div className="p-3 bg-surface-elevated/40 rounded border border-border/60">
-                <span className="text-[10px] uppercase font-mono text-slate-400 block mb-1">
+              <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                <span className="text-[10px] uppercase font-mono text-gray-500 block mb-1">
                   Decision Rationale:
                 </span>
-                <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                <p className="text-xs text-gray-700 leading-relaxed font-sans">
                   {incidentDetail.risk_explanation.decision_reason ||
                     'Score derived from baseline alerts, entity diversity, and MITRE kill-chain coverage.'}
                 </p>
@@ -2412,7 +2412,7 @@ export const IncidentInvestigation: React.FC<IncidentInvestigationProps> = ({
               <div className="flex justify-end pt-2">
                 <button
                   onClick={() => setIsRiskModalOpen(false)}
-                  className="px-5 py-2 rounded-lg text-xs font-semibold bg-surface-elevated hover:bg-slate-700 text-white border border-border"
+                  className="px-5 py-2 rounded text-xs font-semibold bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 shadow-sm"
                 >
                   Close
                 </button>

@@ -345,7 +345,7 @@ async def test_asset_context_management_and_criticality_scale(api_headers):
         assert detail2["is_critical"] is True
 
         # 5. Filter assets list by criticality
-        res_crit = await ac.get("/api/v1/assets?criticality=CRITICAL", headers=api_headers)
+        res_crit = await ac.get("/api/v1/assets?criticality=CRITICAL&limit=200", headers=api_headers)
         assert res_crit.status_code == 200
         assert any(a["agent_id"] == str(agent_id) for a in res_crit.json()["items"])
 

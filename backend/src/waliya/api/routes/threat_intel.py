@@ -29,7 +29,12 @@ from waliya.contracts import (
     ThreatIndicatorResponse,
     ThreatIndicatorUpdate,
 )
-from waliya.core.auth import verify_admin_key
+from waliya.core.auth import (
+    verify_admin_key,
+    verify_analyst_or_above,
+    verify_operator_or_admin,
+    verify_viewer_or_above,
+)
 from waliya.db.models import FeedConfigurationModel, FeedSyncRunModel, ThreatIndicatorModel
 from waliya.db.session import get_db_session
 from waliya.threat_intel.decay_service import ThreatIntelDecayService
@@ -83,7 +88,7 @@ async def list_indicators(
     search: Optional[str] = Query(None, description="Search term matching value, source, or description"),
     limit: int = Query(50, ge=1, le=200, description="Page limit"),
     offset: int = Query(0, ge=0, description="Page offset"),
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> ThreatIndicatorListResponse:
     """Retrieve paginated threat intelligence indicators with optional filtering."""
@@ -142,7 +147,7 @@ async def list_indicators(
 )
 async def create_indicator(
     payload: ThreatIndicatorCreate,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_analyst_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> ThreatIndicatorResponse:
     """Normalize and store a new threat indicator record.
@@ -227,7 +232,7 @@ async def create_indicator(
 )
 async def batch_import_indicators(
     payload: ThreatIndicatorBatchImportRequest,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_analyst_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> ThreatIndicatorBatchImportResponse:
     """Import a bounded batch of threat intelligence indicators.
@@ -338,7 +343,7 @@ async def batch_import_indicators(
 )
 async def get_indicator(
     indicator_id: UUID,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> ThreatIndicatorResponse:
     """Retrieve full details of an individual threat indicator record."""
@@ -363,7 +368,7 @@ async def get_indicator(
 async def update_indicator(
     indicator_id: UUID,
     payload: ThreatIndicatorUpdate,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_analyst_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> ThreatIndicatorResponse:
     """Update confidence, tags, category, or expiration of an existing indicator."""
@@ -426,7 +431,7 @@ async def update_indicator(
 )
 async def deactivate_indicator(
     indicator_id: UUID,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_analyst_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> ThreatIndicatorResponse:
     """Deactivate an indicator, removing it from active matching while preserving historical audit context."""
@@ -467,7 +472,7 @@ async def deactivate_indicator(
 )
 async def activate_indicator(
     indicator_id: UUID,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_analyst_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> ThreatIndicatorResponse:
     """Explicitly activate a threat indicator. Rejects silent reactivation if the indicator is expired."""
@@ -515,7 +520,7 @@ async def activate_indicator(
 )
 async def expire_indicator(
     indicator_id: UUID,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_analyst_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> ThreatIndicatorResponse:
     """Mark an indicator as immediately expired, preventing it from matching live telemetry."""
@@ -558,7 +563,7 @@ async def expire_indicator(
 async def extend_indicator_expiry(
     indicator_id: UUID,
     payload: ThreatIndicatorExtendExpiryRequest,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_analyst_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> ThreatIndicatorResponse:
     """Safely extend an indicator's expiration deadline with explicit validation."""
@@ -620,7 +625,7 @@ async def extend_indicator_expiry(
 )
 async def decay_indicators(
     payload: ThreatIndicatorDecayRequest,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_operator_or_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> ThreatIndicatorDecayResponse:
     """Execute deterministic, idempotent confidence decay for stale threat intelligence indicators."""
@@ -646,7 +651,7 @@ async def decay_indicators(
 )
 async def match_observable(
     payload: IndicatorMatchRequest,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> IndicatorMatchResponse:
     """Safely match a given observable string against active, non-expired threat intelligence indicators.
@@ -749,7 +754,7 @@ def _run_model_to_response(model: FeedSyncRunModel) -> FeedSyncRunResponse:
     summary="List all configured threat intelligence feeds",
 )
 async def list_feeds(
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> List[FeedConfigurationResponse]:
     """Retrieve all external threat intelligence feed configurations with active indicator counts."""
@@ -765,7 +770,7 @@ async def list_feeds(
 )
 async def get_feed(
     feed_id: str,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> FeedConfigurationResponse:
     """Retrieve details for a specific external threat feed."""
@@ -859,7 +864,7 @@ async def update_feed(
 async def sync_feed_endpoint(
     feed_id: str,
     payload: FeedSyncRequest = FeedSyncRequest(),
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_operator_or_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> FeedSyncRunResponse:
     """Execute on-demand threat intelligence synchronization with optional dry-run preview."""
@@ -890,7 +895,7 @@ async def list_sync_runs(
     status_filter: Optional[str] = Query(None, alias="status", description="Filter by run status"),
     limit: int = Query(50, ge=1, le=200, description="Page limit"),
     offset: int = Query(0, ge=0, description="Page offset"),
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> FeedSyncRunListResponse:
     """List historical synchronization executions with performance and count metrics."""
@@ -929,7 +934,7 @@ async def list_sync_runs(
 )
 async def get_sync_run(
     run_id: UUID,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> FeedSyncRunResponse:
     """Retrieve diagnostics and metrics for a specific synchronization run."""

@@ -29,6 +29,19 @@ class TerminateProcessHandler(BaseActionHandler):
         if not proc_dir.is_dir():
             return False, "", ""
 
+        # Check process state for zombie/dead processes (cease execution after SIGKILL)
+        status_file = proc_dir / "status"
+        if status_file.exists():
+            try:
+                for line in status_file.read_text(encoding="utf-8", errors="replace").splitlines():
+                    if line.startswith("State:"):
+                        state_val = line.split()[1]
+                        if state_val in ("Z", "X"):
+                            return False, "", ""
+                        break
+            except (PermissionError, FileNotFoundError, OSError):
+                pass
+
         exe_name = ""
         # 1. Check comm file
         comm_file = proc_dir / "comm"

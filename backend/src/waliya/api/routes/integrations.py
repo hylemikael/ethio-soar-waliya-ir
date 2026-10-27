@@ -22,7 +22,11 @@ from waliya.contracts import (
     NotificationDestinationResponse,
     NotificationDestinationUpdate,
 )
-from waliya.core.auth import verify_admin_key
+from waliya.core.auth import (
+    verify_admin_key,
+    verify_operator_or_admin,
+    verify_viewer_or_above,
+)
 from waliya.db.models import (
     InboundEventDedupModel,
     InboundSourceModel,
@@ -126,7 +130,7 @@ def _to_delivery_response(
     summary="List all configured outbound notification destinations",
 )
 async def list_destinations(
-    admin_actor: str = Depends(verify_admin_key),
+    admin_actor: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> List[NotificationDestinationResponse]:
     """Retrieve all configured webhook destinations with secrets securely redacted."""
@@ -216,7 +220,7 @@ async def create_destination(
 )
 async def get_destination(
     destination_id: UUID,
-    admin_actor: str = Depends(verify_admin_key),
+    admin_actor: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> NotificationDestinationResponse:
     """Retrieve details of a single notification destination."""
@@ -401,7 +405,7 @@ async def list_deliveries(
     event_type: Optional[str] = Query(None, description="Filter by event type"),
     limit: int = Query(50, ge=1, le=200, description="Page limit"),
     offset: int = Query(0, ge=0, description="Page offset"),
-    admin_actor: str = Depends(verify_admin_key),
+    admin_actor: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> NotificationDeliveryListResponse:
     """Retrieve paginated delivery history and audit outcomes."""
@@ -447,7 +451,7 @@ async def list_deliveries(
 )
 async def retry_delivery(
     delivery_id: UUID,
-    admin_actor: str = Depends(verify_admin_key),
+    admin_actor: str = Depends(verify_operator_or_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> NotificationDeliveryResponse:
     """Manually trigger retry for a failed or retry-scheduled notification delivery."""
@@ -490,7 +494,7 @@ async def retry_delivery(
 )
 async def dispatch_pending_deliveries(
     batch_size: int = Query(50, ge=1, le=200),
-    admin_actor: str = Depends(verify_admin_key),
+    admin_actor: str = Depends(verify_operator_or_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> Dict[str, Any]:
     """Process pending and retry-scheduled notification deliveries."""
@@ -518,7 +522,7 @@ async def dispatch_pending_deliveries(
     summary="List all configured inbound security event sources",
 )
 async def list_inbound_sources(
-    admin_actor: str = Depends(verify_admin_key),
+    admin_actor: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> List[InboundSourceResponse]:
     """Retrieve all registered inbound event sources with secrets redacted."""
@@ -601,7 +605,7 @@ async def create_inbound_source(
 )
 async def get_inbound_source(
     source_identifier: str,
-    admin_actor: str = Depends(verify_admin_key),
+    admin_actor: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> InboundSourceResponse:
     """Get single source configuration details."""

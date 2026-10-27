@@ -97,6 +97,7 @@ class ResponseConfig(BaseModel):
             "UNBLOCK_IP",
             "TERMINATE_PROCESS",
             "COLLECT_FORENSIC_ARTIFACT",
+            "RECOVER_WEBSITE_FILE",
         ],
         description="Strictly allowlisted response action names.",
     )
@@ -110,8 +111,20 @@ class ResponseConfig(BaseModel):
         le=100.0,
         description="Maximum artifact size in megabytes.",
     )
+    website_root_dir: Path = Field(
+        default=Path("/var/www/html"),
+        description="Allowed root directory for website file recovery.",
+    )
+    website_backup_dir: Path = Field(
+        default=Path("./data/backups"),
+        description="Directory holding authorized backups.",
+    )
+    quarantine_dir: Path = Field(
+        default=Path("./data/quarantine"),
+        description="Directory holding quarantined defaced/suspicious files.",
+    )
 
-    @field_validator("forensic_artifact_dir", mode="before")
+    @field_validator("forensic_artifact_dir", "website_root_dir", "website_backup_dir", "quarantine_dir", mode="before")
     @classmethod
     def parse_path(cls, v: Any) -> Path:
         return Path(v).expanduser().resolve()

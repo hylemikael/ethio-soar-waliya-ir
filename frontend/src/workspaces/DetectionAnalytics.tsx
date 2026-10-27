@@ -347,16 +347,16 @@ export const DetectionAnalytics: React.FC<DetectionAnalyticsProps> = ({
     switch (status.toUpperCase()) {
       case 'PASSED':
       case 'VALIDATED':
-        return 'bg-emerald-950/80 text-emerald-300 border-emerald-800/80';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'FAILED':
-        return 'bg-red-950/80 text-red-300 border-red-800/80';
+        return 'bg-red-50 text-red-700 border-red-200';
       case 'INCONCLUSIVE':
-        return 'bg-amber-950/80 text-amber-300 border-amber-800/80';
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'RUNNING':
-        return 'bg-blue-950/80 text-blue-300 border-blue-800/80';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'NOT_TESTED':
       default:
-        return 'bg-slate-800 text-slate-400 border-slate-700';
+        return 'bg-gray-100 text-gray-600 border-gray-200';
     }
   };
 
@@ -565,15 +565,15 @@ export const DetectionAnalytics: React.FC<DetectionAnalyticsProps> = ({
   const getSeverityBadge = (sev: Severity) => {
     switch (sev) {
       case 'CRITICAL':
-        return 'bg-red-950/80 text-red-300 border-red-800';
+        return 'bg-red-50 text-red-700 border-red-200';
       case 'HIGH':
-        return 'bg-orange-950/80 text-orange-300 border-orange-800';
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'MEDIUM':
-        return 'bg-yellow-950/80 text-yellow-300 border-yellow-800';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'LOW':
-        return 'bg-blue-950/80 text-blue-300 border-blue-800';
+        return 'bg-gray-50 text-gray-700 border-gray-200';
       default:
-        return 'bg-slate-800 text-slate-300 border-slate-700';
+        return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
 
@@ -1659,19 +1659,19 @@ export const DetectionAnalytics: React.FC<DetectionAnalyticsProps> = ({
 
       {/* Rule Create/Edit Modal */}
       {isEditorOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-          <div className="w-full max-w-2xl bg-[#0d1322] border border-border rounded-xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-2xl bg-white border border-gray-200 rounded-lg shadow-xl p-6 relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsEditorOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <h3 className="text-base font-bold text-white mb-1">
+            <h3 className="text-base font-bold text-gray-900 mb-1">
               {editingRule.id ? 'Edit Detection Rule' : 'Create Versioned Detection Rule'}
             </h3>
-            <p className="text-xs text-slate-400 mb-4">
+            <p className="text-xs text-gray-500 mb-4">
               Validated against AST condition operators. Content is never executed as arbitrary code.
             </p>
 
@@ -1809,18 +1809,18 @@ export const DetectionAnalytics: React.FC<DetectionAnalyticsProps> = ({
 
       {/* Rule Dry-Run Tester Modal */}
       {isTesterOpen && testingRule && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-          <div className="w-full max-w-2xl bg-[#0d1322] border border-border rounded-xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-2xl bg-white border border-gray-200 rounded-lg shadow-xl p-6 relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsTesterOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center space-x-2 mb-1">
-              <Play className="w-4 h-4 text-blue-400" />
-              <h3 className="text-base font-bold text-white">
+              <Play className="w-4 h-4 text-blue-600" />
+              <h3 className="text-base font-bold text-gray-900">
                 Dry-Run Rule Evaluation: {testingRule.rule_id}
               </h3>
             </div>
@@ -2369,11 +2369,11 @@ export const DetectionAnalytics: React.FC<DetectionAnalyticsProps> = ({
 
       {/* Simulation Run Details & Evidence Modal */}
       {isRunModalOpen && selectedRun && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-3xl bg-[#0d1322] border border-border rounded-xl shadow-2xl p-6 relative max-h-[92vh] overflow-y-auto space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-3xl bg-white border border-gray-200 rounded-lg shadow-xl p-6 relative max-h-[92vh] overflow-y-auto space-y-5">
             <button
               onClick={() => setIsRunModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
             >
               <X className="w-5 h-5" />
             </button>
@@ -2381,12 +2381,12 @@ export const DetectionAnalytics: React.FC<DetectionAnalyticsProps> = ({
             {/* Header & Badges */}
             <div>
               <div className="flex items-center space-x-2 mb-1">
-                <Target className="w-5 h-5 text-purple-400" />
-                <h3 className="text-base font-bold text-white">
+                <Target className="w-5 h-5 text-purple-600" />
+                <h3 className="text-base font-bold text-gray-900">
                   Simulation Evidence & Audit Trail: {selectedRun.scenario_name}
                 </h3>
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-gray-500">
                 Detailed server-verified execution record comparing expected vs observed outcomes
               </p>
             </div>

@@ -19,7 +19,7 @@ from waliya.contracts import (
     AssetEnvironmentEnum,
     AssetListResponse,
 )
-from waliya.core.auth import verify_admin_key
+from waliya.core.auth import verify_operator_or_admin, verify_viewer_or_above
 from waliya.db.models import AgentModel, AssetContextModel
 from waliya.db.session import get_db_session
 
@@ -83,7 +83,7 @@ async def list_assets(
     search: Optional[str] = Query(None, description="Search term matching hostname or primary IP"),
     limit: int = Query(50, ge=1, le=200, description="Page limit"),
     offset: int = Query(0, ge=0, description="Page offset"),
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> AssetListResponse:
     """Retrieve paginated assets with operational state and business criticality context."""
@@ -143,7 +143,7 @@ async def list_assets(
 )
 async def get_asset(
     agent_id: UUID,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> AssetDetailResponse:
     """Retrieve asset operational details and associated administrative context."""
@@ -173,7 +173,7 @@ async def get_asset(
 async def update_asset_context(
     agent_id: UUID,
     payload: AssetContextCreateOrUpdate,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_operator_or_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> AssetContextResponse:
     """Set business criticality and administrative metadata for an asset.

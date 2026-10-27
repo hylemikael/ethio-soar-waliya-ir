@@ -29,7 +29,11 @@ from waliya.contracts import (
     ResponsePlanStatusEnum,
     ResponseStateEnum,
 )
-from waliya.core.auth import verify_admin_key, verify_operator_or_admin
+from waliya.core.auth import (
+    verify_auditor_or_admin,
+    verify_operator_or_admin,
+    verify_viewer_or_above,
+)
 from waliya.db.models import (
     AgentModel,
     AuditLedgerModel,
@@ -71,7 +75,7 @@ class PlaybookExecuteRequest(BaseModel):
     summary="List available response playbooks",
 )
 async def list_playbooks(
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> List[PlaybookSchema]:
     """Retrieve all configured SOAR playbooks."""
@@ -101,7 +105,7 @@ async def list_playbooks(
 )
 async def execute_playbook(
     payload: PlaybookExecuteRequest,
-    admin_id: str = Depends(verify_admin_key),
+    admin_id: str = Depends(verify_operator_or_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> PlaybookRunSummary:
     """Execute response playbook with dry-run default and approval gates."""
@@ -162,7 +166,7 @@ async def execute_playbook(
 )
 async def get_playbook_run(
     run_id: UUID,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> Dict[str, Any]:
     """Retrieve detailed execution status and step outputs for a playbook run."""
@@ -293,7 +297,7 @@ async def approve_response_action(
 async def reject_response_action(
     action_id: UUID,
     payload: ActionApprovalRequest,
-    admin_id: str = Depends(verify_admin_key),
+    admin_id: str = Depends(verify_operator_or_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> Dict[str, Any]:
     """Reject an action and transition it to terminal REJECTED state."""
@@ -346,7 +350,7 @@ async def reject_response_action(
     summary="Cryptographically verify audit ledger chain",
 )
 async def verify_audit_ledger(
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_auditor_or_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> AuditVerificationResponse:
     """Validate hash chain integrity from genesis record to latest committed head."""
@@ -362,7 +366,7 @@ async def verify_audit_ledger(
 async def list_audit_records(
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_auditor_or_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> List[AuditLedgerRecord]:
     """Retrieve chronologically ordered audit ledger records."""
@@ -402,7 +406,7 @@ async def list_response_actions(
     status_filter: Optional[str] = Query(default=None, alias="status"),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> List[Dict[str, Any]]:
     """Retrieve response actions with target agent, incident, and execution context."""
@@ -476,7 +480,7 @@ async def list_response_actions(
 async def list_playbook_runs(
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> List[Dict[str, Any]]:
     """List recent SOAR workflow execution history."""
@@ -567,7 +571,7 @@ def _format_plan_response(plan: ResponsePlanModel) -> ResponsePlanResponse:
     summary="List allowlisted response action registry definitions",
 )
 async def get_action_registry(
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
 ) -> List[ActionRegistryEntryResponse]:
     """Retrieve operational metadata and safety policies for allowlisted response actions."""
     return ResponseActionRegistry.list_entries()
@@ -581,7 +585,7 @@ async def get_action_registry(
 )
 async def create_response_plan(
     payload: ResponsePlanCreateRequest,
-    admin_id: str = Depends(verify_admin_key),
+    admin_id: str = Depends(verify_operator_or_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> ResponsePlanResponse:
     """Create an approval-gated response plan with explicit risk classification."""
@@ -610,7 +614,7 @@ async def list_response_plans(
     status_filter: Optional[str] = Query(default=None, description="Filter by status enum"),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> List[ResponsePlanResponse]:
     """Retrieve governed response plans ordered by creation time."""
@@ -632,7 +636,7 @@ async def list_response_plans(
 )
 async def get_response_plan(
     plan_id: UUID,
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> ResponsePlanResponse:
     """Retrieve full details of a specific response plan including linked commands."""
@@ -653,7 +657,7 @@ async def get_response_plan(
 )
 async def submit_response_plan(
     plan_id: UUID,
-    admin_id: str = Depends(verify_admin_key),
+    admin_id: str = Depends(verify_operator_or_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> ResponsePlanResponse:
     """Transition a DRAFT response plan to PENDING_APPROVAL and record approval hash."""

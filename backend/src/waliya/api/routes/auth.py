@@ -41,7 +41,11 @@ from waliya.core.password import (
     verify_password,
     verify_reset_token,
 )
+import json
+import secrets
+
 from waliya.core.rate_limit import (
+    get_client_ip,
     login_rate_limiter,
     mfa_rate_limiter,
     password_reset_limiter,
@@ -61,6 +65,77 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 # Temporary in-memory pending MFA challenges (challenge_token -> metadata)
 _PENDING_MFA_CHALLENGES: Dict[str, Dict[str, Any]] = {}
+
+# Static dummy hash for constant-time comparison on non-existent accounts
+_DUMMY_PBKDF2_HASH = (
+    "pbkdf2_sha256$600000$ZHVtbXlzYWx0MTIzNDU2Nw==$ZHVtbXloYXNoMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY="
+)
+
+
+def _get_redis_client() -> Optional[Any]:
+    """Lazy load Redis client for distributed MFA challenge state."""
+    try:
+        from redis import Redis
+        return Redis.from_url(settings.REDIS_URL, decode_responses=True, socket_timeout=2.0)
+    except Exception as exc:
+        logger.debug("Redis client unavailable in auth routes: %s", exc)
+        return None
+
+
+def _store_mfa_challenge(challenge_token: str, data: Dict[str, Any], ttl_seconds: int = 300) -> None:
+    """Store temporary MFA challenge token in distributed Redis with local in-memory fallback."""
+    _PENDING_MFA_CHALLENGES[challenge_token] = data
+    r = _get_redis_client()
+    if r is not None:
+        try:
+            data_copy = dict(data)
+            if "expires_at" in data_copy and isinstance(data_copy["expires_at"], datetime):
+                data_copy["expires_at"] = data_copy["expires_at"].isoformat()
+            r.set(f"mfa:challenge:{challenge_token}", json.dumps(data_copy), ex=ttl_seconds)
+        except Exception as exc:
+            logger.debug("Failed storing MFA challenge in Redis: %s", exc)
+
+
+def _consume_mfa_challenge(challenge_token: str) -> Optional[Dict[str, Any]]:
+    """Retrieve and immediately invalidate an MFA challenge token (atomic single-use)."""
+    data: Optional[Dict[str, Any]] = None
+    r = _get_redis_client()
+    if r is not None:
+        try:
+            raw = r.getdel(f"mfa:challenge:{challenge_token}")
+            if raw:
+                data = json.loads(raw)
+        except Exception as exc:
+            logger.debug("Failed consuming MFA challenge from Redis: %s", exc)
+
+    local_data = _PENDING_MFA_CHALLENGES.pop(challenge_token, None)
+    if data is None:
+        data = local_data
+
+    if not data:
+        return None
+
+    # Check expiration
+    expires_at = data.get("expires_at")
+    if isinstance(expires_at, (int, float)):
+        if datetime.now(timezone.utc).timestamp() > expires_at:
+            return None
+    elif isinstance(expires_at, str):
+        try:
+            exp_dt = datetime.fromisoformat(expires_at)
+            if exp_dt.tzinfo is None:
+                exp_dt = exp_dt.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) > exp_dt:
+                return None
+        except ValueError:
+            pass
+    elif isinstance(expires_at, datetime):
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        if datetime.now(timezone.utc) > expires_at:
+            return None
+
+    return data
 
 
 # --- Request and Response Schemas ---
@@ -177,12 +252,16 @@ async def login(
     - HttpOnly, SameSite, and Secure session cookie emission with CSRF token.
     """
     await ensure_initial_admin_seeded(session)
-    client_ip = request.client.host if request.client else "unknown"
+    client_ip = get_client_ip(request)
+    username_val = payload.username.strip() if payload.username else None
+    user_key = f"user:{username_val.lower()}" if username_val else None
 
-    # 1. Rate Limiting Check
-    if login_rate_limiter.is_rate_limited(client_ip):
-        rem = login_rate_limiter.get_remaining_lockout_seconds(client_ip)
-        logger.warning("Login rate limit exceeded for client IP: %s (locked for %ds)", client_ip, rem)
+    # 1. Multi-signal Rate Limiting Check (both IP and targeted account)
+    if login_rate_limiter.is_rate_limited(client_ip) or (user_key and login_rate_limiter.is_rate_limited(user_key)):
+        rem_ip = login_rate_limiter.get_remaining_lockout_seconds(client_ip)
+        rem_user = login_rate_limiter.get_remaining_lockout_seconds(user_key) if user_key else 0
+        rem = max(rem_ip, rem_user)
+        logger.warning("Login rate limit exceeded for client IP %s or user %s (locked for %ds)", client_ip, user_key, rem)
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail=f"Too many failed authentication attempts. Please wait {rem} seconds before retrying.",
@@ -225,7 +304,6 @@ async def login(
         )
 
     # 3. Case B: Multi-User Username & Password Authentication
-    username_val = payload.username.strip()
     password_val = (payload.password or payload.api_key or "").strip()
 
     # Query user by username or email
@@ -239,10 +317,11 @@ async def login(
     now_utc = datetime.now(timezone.utc)
 
     # Timing-safe dummy hash verification if user not found to prevent username enumeration
-    dummy_hash = "pbkdf2_sha256$600000$ZHVtbXlzYWx0MTIzNDU2Nw==$ZHVtbXloYXNoMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY="
     if not user:
-        verify_password("dummy_password", dummy_hash)
+        verify_password(password_val, _DUMMY_PBKDF2_HASH)
         login_rate_limiter.record_failure(client_ip)
+        if user_key:
+            login_rate_limiter.record_failure(user_key)
         logger.warning("Failed login for non-existent user '%s' from IP: %s", username_val, client_ip)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -251,7 +330,10 @@ async def login(
 
     # Check account active status
     if not user.is_active:
+        verify_password(password_val, _DUMMY_PBKDF2_HASH)
         login_rate_limiter.record_failure(client_ip)
+        if user_key:
+            login_rate_limiter.record_failure(user_key)
         logger.warning("Login attempt for deactivated user '%s' from IP: %s", username_val, client_ip)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -271,6 +353,8 @@ async def login(
     is_valid, upgraded_hash = verify_and_check_upgrade(password_val, user.password_hash)
     if not is_valid:
         login_rate_limiter.record_failure(client_ip)
+        if user_key:
+            login_rate_limiter.record_failure(user_key)
         user.failed_login_attempts += 1
         if user.failed_login_attempts >= 5:
             user.locked_until = now_utc + timedelta(minutes=5)
@@ -299,6 +383,8 @@ async def login(
         logger.info("Transparently upgraded password hash for user '%s'", user.username)
     await session.commit()
     login_rate_limiter.record_success(client_ip)
+    if user_key:
+        login_rate_limiter.record_success(user_key)
 
     # 4. Check Multi-Factor Authentication (MFA)
     if user.is_mfa_enabled:
@@ -312,14 +398,15 @@ async def login(
                     detail="Invalid multi-factor authentication code or recovery code",
                 )
         else:
-            # Issue temporary challenge token (5-minute TTL)
-            challenge_token = uuid4().hex
-            _PENDING_MFA_CHALLENGES[challenge_token] = {
+            # Issue temporary challenge token (5-minute TTL, single-use, Redis backed)
+            challenge_token = secrets.token_urlsafe(32)
+            challenge_payload = {
                 "user_id": str(user.id),
                 "username": user.username,
                 "role": user.role,
-                "expires_at": now_utc + timedelta(minutes=5),
+                "expires_at": (now_utc + timedelta(minutes=5)).timestamp(),
             }
+            _store_mfa_challenge(challenge_token, challenge_payload, ttl_seconds=300)
             logger.info("MFA challenge issued for user '%s' from IP %s", user.username, client_ip)
             return LoginResponse(
                 status="MFA_REQUIRED",
@@ -375,7 +462,7 @@ async def complete_mfa_challenge(
     session: AsyncSession = Depends(get_db_session),
 ) -> LoginResponse:
     """Verify MFA TOTP code or single-use recovery code to complete login."""
-    client_ip = request.client.host if request.client else "unknown"
+    client_ip = get_client_ip(request)
     if mfa_rate_limiter.is_rate_limited(client_ip):
         rem = mfa_rate_limiter.get_remaining_lockout_seconds(client_ip)
         raise HTTPException(
@@ -383,24 +470,18 @@ async def complete_mfa_challenge(
             detail=f"Too many failed MFA verification attempts. Please retry in {rem} seconds.",
         )
 
-    challenge_data = _PENDING_MFA_CHALLENGES.get(payload.challenge_token)
+    challenge_data = _consume_mfa_challenge(payload.challenge_token)
     if not challenge_data:
         mfa_rate_limiter.record_failure(client_ip)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="MFA challenge token is invalid or has expired. Please log in again.",
-        )
-
-    now_utc = datetime.now(timezone.utc)
-    if challenge_data["expires_at"] < now_utc:
-        _PENDING_MFA_CHALLENGES.pop(payload.challenge_token, None)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="MFA challenge has expired. Please initiate login again.",
+            detail="MFA challenge token is invalid, expired, or already consumed. Please log in again.",
         )
 
     user_id = UUID(challenge_data["user_id"])
-    user = (await session.execute(select(UserModel).where(UserModel.id == user_id))).scalars().first()
+    user = (await session.execute(
+        select(UserModel).where(UserModel.id == user_id).with_for_update()
+    )).scalars().first()
     if not user or not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -415,8 +496,6 @@ async def complete_mfa_challenge(
             detail="Invalid multi-factor authentication code or recovery code.",
         )
 
-    # MFA verified: remove challenge token
-    _PENDING_MFA_CHALLENGES.pop(payload.challenge_token, None)
     mfa_rate_limiter.record_success(client_ip)
     await session.commit()
 
@@ -460,10 +539,10 @@ async def enroll_mfa(
     session: AsyncSession = Depends(get_db_session),
 ) -> MFAEnrollResponse:
     """Generate high-entropy Base32 TOTP secret, QR code URI, and backup recovery codes."""
-    if not actor.user_id:
+    if actor.auth_method != "session" or not actor.user_id:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="MFA enrollment requires an active user account session.",
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="MFA enrollment requires an active interactive user session and cannot be performed via API key.",
         )
 
     user = (await session.execute(select(UserModel).where(UserModel.id == actor.user_id))).scalars().first()
@@ -471,7 +550,7 @@ async def enroll_mfa(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User account not found.")
 
     raw_secret = generate_totp_secret()
-    plain_recovery_codes, encrypted_codes = generate_recovery_codes(settings.SECRET_KEY)
+    plain_recovery_codes, encrypted_codes = generate_recovery_codes()
 
     # Store encrypted pending secret on user profile
     user.mfa_secret_encrypted = encrypt_secret(raw_secret, settings.SECRET_KEY)
@@ -499,8 +578,11 @@ async def verify_mfa_enrollment(
     session: AsyncSession = Depends(get_db_session),
 ) -> Dict[str, Any]:
     """Verify candidate TOTP code and activate MFA on the calling account."""
-    if not actor.user_id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Active user account required.")
+    if actor.auth_method != "session" or not actor.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="MFA verification requires an active interactive user session and cannot be performed via API key.",
+        )
 
     user = (await session.execute(select(UserModel).where(UserModel.id == actor.user_id))).scalars().first()
     if not user or not user.mfa_secret_encrypted:
@@ -539,12 +621,22 @@ async def disable_mfa(
     session: AsyncSession = Depends(get_db_session),
 ) -> Dict[str, Any]:
     """Disable MFA requiring re-authentication with current password."""
-    if not actor.user_id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Active user account required.")
+    if actor.auth_method != "session" or not actor.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="MFA disablement requires an active interactive user session and cannot be performed via API key.",
+        )
 
     user = (await session.execute(select(UserModel).where(UserModel.id == actor.user_id))).scalars().first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
+    # Privileged account MFA enforcement policy check
+    if getattr(settings, "MFA_ENFORCED_FOR_PRIVILEGED", True) and user.role in ("ADMIN", "OPERATOR"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Multi-factor authentication is mandatory for privileged accounts (ADMIN, OPERATOR) and cannot be disabled.",
+        )
 
     # Re-authentication verification
     if not verify_password(payload.current_password, user.password_hash):
@@ -581,7 +673,7 @@ async def request_password_reset(
     session: AsyncSession = Depends(get_db_session),
 ) -> Dict[str, Any]:
     """Generate unpredictable single-use password reset token with timing enumeration resistance."""
-    client_ip = request.client.host if request.client else "unknown"
+    client_ip = get_client_ip(request)
     if password_reset_limiter.is_rate_limited(client_ip):
         rem = password_reset_limiter.get_remaining_lockout_seconds(client_ip)
         raise HTTPException(
@@ -660,13 +752,19 @@ async def confirm_password_reset(
             detail="Password reset token is invalid, expired, or has already been used.",
         )
 
-    user = (await session.execute(select(UserModel).where(UserModel.id == matched_token.user_id))).scalars().first()
+    user = (await session.execute(
+        select(UserModel).where(UserModel.id == matched_token.user_id).with_for_update()
+    )).scalars().first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User account not found.")
 
-    # Validate NIST password complexity
+    # Validate NIST password complexity respecting user's MFA enrollment
     try:
-        validate_password_complexity(payload.new_password, username=user.username)
+        validate_password_complexity(
+            payload.new_password,
+            username=user.username,
+            is_mfa_enforced=user.is_mfa_enabled,
+        )
     except PasswordPolicyError as err:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
 
@@ -703,10 +801,15 @@ async def change_password(
     session: AsyncSession = Depends(get_db_session),
 ) -> Dict[str, Any]:
     """Change user password, validating current password and revoking active sessions."""
-    if not actor.user_id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Active user account required.")
+    if actor.auth_method != "session" or not actor.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Password change requires an active interactive user session and cannot be performed via API key.",
+        )
 
-    user = (await session.execute(select(UserModel).where(UserModel.id == actor.user_id))).scalars().first()
+    user = (await session.execute(
+        select(UserModel).where(UserModel.id == actor.user_id).with_for_update()
+    )).scalars().first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
 
@@ -717,9 +820,13 @@ async def change_password(
             detail="Current password verification failed.",
         )
 
-    # Validate NIST password complexity
+    # Validate NIST password complexity respecting user's MFA enrollment
     try:
-        validate_password_complexity(payload.new_password, username=user.username)
+        validate_password_complexity(
+            payload.new_password,
+            username=user.username,
+            is_mfa_enforced=user.is_mfa_enabled,
+        )
     except PasswordPolicyError as err:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
 

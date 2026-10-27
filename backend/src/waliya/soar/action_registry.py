@@ -109,6 +109,16 @@ ACTION_REGISTRY: Dict[ResponseActionEnum, ActionMetadata] = {
         description="Relocates malicious file into restricted quarantine directory and strips execute permissions.",
         parameter_fields=["file_path", "quarantine_directory"],
     ),
+    ResponseActionEnum.RECOVER_WEBSITE_FILE: ActionMetadata(
+        action_type=ResponseActionEnum.RECOVER_WEBSITE_FILE,
+        risk_classification=ActionRiskClassificationEnum.REVERSIBLE,
+        default_requires_approval=True,
+        default_timeout_seconds=60,
+        max_retries=1,
+        is_reversible=True,
+        description="Restores defaced or modified web file from verified cryptographic backup with evidence quarantine.",
+        parameter_fields=["target_file", "backup_file", "expected_hash", "quarantine_directory", "web_root"],
+    ),
 }
 
 # Strict priority order for determining plan-level risk classification

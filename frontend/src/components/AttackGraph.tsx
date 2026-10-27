@@ -237,58 +237,58 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
   const getNodeIcon = (type: EntityType) => {
     switch (type) {
       case 'Host':
-        return <Server className="w-4 h-4 text-cyan-400" />;
+        return <Server className="w-4 h-4 text-blue-600" />;
       case 'User':
-        return <User className="w-4 h-4 text-amber-400" />;
+        return <User className="w-4 h-4 text-amber-600" />;
       case 'IPAddress':
-        return <Globe className="w-4 h-4 text-emerald-400" />;
+        return <Globe className="w-4 h-4 text-emerald-600" />;
       case 'Process':
-        return <Terminal className="w-4 h-4 text-purple-400" />;
+        return <Terminal className="w-4 h-4 text-purple-600" />;
       case 'File':
-        return <FileText className="w-4 h-4 text-rose-400" />;
+        return <FileText className="w-4 h-4 text-rose-600" />;
       case 'Alert':
-        return <ShieldAlert className="w-4 h-4 text-red-400" />;
+        return <ShieldAlert className="w-4 h-4 text-red-600" />;
       case 'Indicator':
-        return <Info className="w-4 h-4 text-orange-400" />;
+        return <Info className="w-4 h-4 text-orange-600" />;
       default:
-        return <Layers className="w-4 h-4 text-blue-400" />;
+        return <Layers className="w-4 h-4 text-gray-600" />;
     }
   };
 
   const getNodeColors = (type: EntityType) => {
     switch (type) {
       case 'Host':
-        return { fill: '#082f49', stroke: '#0284c7', text: '#38bdf8' };
+        return { fill: '#E0F2FE', stroke: '#0284C7', text: '#0369A1' };
       case 'User':
-        return { fill: '#451a03', stroke: '#d97706', text: '#fbbf24' };
+        return { fill: '#FEF3C7', stroke: '#D97706', text: '#B45309' };
       case 'IPAddress':
-        return { fill: '#022c22', stroke: '#059669', text: '#34d399' };
+        return { fill: '#DCFCE7', stroke: '#059669', text: '#047857' };
       case 'Process':
-        return { fill: '#2e1065', stroke: '#7c3aed', text: '#c084fc' };
+        return { fill: '#F3E8FF', stroke: '#7C3AED', text: '#6D28D9' };
       case 'File':
-        return { fill: '#4c0519', stroke: '#e11d48', text: '#fb7185' };
+        return { fill: '#FFE4E6', stroke: '#E11D48', text: '#BE123C' };
       case 'Alert':
-        return { fill: '#450a0a', stroke: '#dc2626', text: '#f87171' };
+        return { fill: '#FEE2E2', stroke: '#DC2626', text: '#B91C1C' };
       case 'Indicator':
-        return { fill: '#431407', stroke: '#ea580c', text: '#fb923c' };
+        return { fill: '#FFEDD5', stroke: '#EA580C', text: '#C2410C' };
       default:
-        return { fill: '#1e293b', stroke: '#64748b', text: '#cbd5e1' };
+        return { fill: '#F1F5F9', stroke: '#64748B', text: '#475569' };
     }
   };
 
   if (!graph || boundedNodes.length === 0) {
     return (
-      <div className="h-96 rounded-xl border border-border bg-[#0b101d] flex flex-col items-center justify-center p-6 text-center">
-        <ShieldAlert className="w-10 h-10 text-slate-500 mb-3" />
-        <h4 className="text-sm font-semibold text-white">No Entity Correlation Graph Available</h4>
-        <p className="text-xs text-slate-400 max-w-md mt-1">
+      <div className="h-96 rounded-lg border border-gray-200 bg-white flex flex-col items-center justify-center p-6 text-center shadow-sm">
+        <ShieldAlert className="w-10 h-10 text-gray-400 mb-3" />
+        <h4 className="text-sm font-semibold text-gray-900">No Entity Correlation Graph Available</h4>
+        <p className="text-xs text-gray-500 max-w-md mt-1">
           Telemetry for this incident has not yet established correlated entity relationships, or the graph snapshot is empty.
         </p>
         {onRefreshGraph && (
           <button
             onClick={() => onRefreshGraph()}
             disabled={isRefreshing}
-            className="mt-4 flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition-colors disabled:opacity-50"
+            className="mt-4 flex items-center space-x-2 px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium transition-colors shadow-sm disabled:opacity-50"
           >
             <RotateCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
             <span>Reconstruct Graph from Evidence</span>
@@ -302,11 +302,11 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
     <div className="space-y-3">
       {/* Attack Paths Selector Header (if paths detected) */}
       {graph.attack_paths && graph.attack_paths.length > 0 && (
-        <div className="rounded-xl border border-amber-900/60 bg-amber-950/20 p-3 space-y-2.5">
+        <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-3 space-y-2.5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center space-x-2">
-              <Route className="w-4 h-4 text-amber-400" />
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
+              <Route className="w-4 h-4 text-amber-600" />
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-900">
                 Discovered Attack Progressions ({graph.attack_paths.length})
               </span>
             </div>
@@ -324,17 +324,17 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
                     }}
                     className={`px-2.5 py-1 rounded text-xs font-mono transition-all flex items-center space-x-1.5 border ${
                       isSelected
-                        ? 'bg-amber-600/30 text-amber-200 border-amber-500 shadow-sm'
-                        : 'bg-surface-elevated text-slate-400 border-border hover:text-white'
+                        ? 'bg-amber-100 text-amber-900 border-amber-300 shadow-sm font-semibold'
+                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
                     }`}
                   >
                     <span>Path {idx + 1}</span>
-                    <span className="text-[10px] opacity-75 font-sans">({path.hop_count} hops)</span>
+                    <span className="text-[10px] text-gray-500 font-sans">({path.hop_count} hops)</span>
                     <span
                       className={`text-[9px] px-1 py-0.2 rounded uppercase font-sans font-bold ${
                         path.risk_severity === 'CRITICAL'
-                          ? 'bg-rose-950 text-rose-300 border border-rose-800'
-                          : 'bg-amber-950 text-amber-300 border border-amber-800'
+                          ? 'bg-red-100 text-red-800 border border-red-200'
+                          : 'bg-amber-100 text-amber-800 border border-amber-200'
                       }`}
                     >
                       {path.risk_severity}
@@ -347,17 +347,17 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
 
           {/* Stepper for Active Attack Path */}
           {activeAttackPath && (
-            <div className="pt-2 border-t border-amber-900/40 flex items-center space-x-2 overflow-x-auto text-xs py-1">
-              <span className="text-[11px] font-mono text-slate-400 shrink-0">Progression:</span>
+            <div className="pt-2 border-t border-amber-200/60 flex items-center space-x-2 overflow-x-auto text-xs py-1">
+              <span className="text-xs font-mono text-gray-500 shrink-0">Progression:</span>
               <button
                 onClick={() => {
                   setActiveStepIndex(null);
                   setSelectedEdge(null);
                 }}
-                className={`px-2 py-0.5 rounded text-[11px] font-mono shrink-0 transition-colors ${
+                className={`px-2 py-0.5 rounded text-xs font-mono shrink-0 transition-colors ${
                   activeStepIndex === null
-                    ? 'bg-amber-500/30 text-amber-300 border border-amber-500/50'
-                    : 'bg-surface text-slate-400 hover:text-white'
+                    ? 'bg-amber-200/70 text-amber-900 border border-amber-300 font-semibold'
+                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                 }`}
               >
                 All Steps
@@ -366,7 +366,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
                 const isActive = activeStepIndex === idx;
                 return (
                   <div key={idx} className="flex items-center space-x-1 shrink-0">
-                    <ArrowRight className="w-3 h-3 text-slate-600 shrink-0" />
+                    <ArrowRight className="w-3 h-3 text-gray-400 shrink-0" />
                     <button
                       onClick={() => {
                         setActiveStepIndex(idx);
@@ -376,15 +376,15 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
                         );
                         if (match) setSelectedEdge(match);
                       }}
-                      className={`px-2 py-0.5 rounded text-[11px] font-mono transition-colors flex items-center space-x-1 ${
+                      className={`px-2 py-0.5 rounded text-xs font-mono transition-colors flex items-center space-x-1 ${
                         isActive
-                          ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400'
-                          : 'bg-surface text-slate-400 hover:text-white border border-border'
+                          ? 'bg-blue-100 text-blue-900 border border-blue-300 font-semibold'
+                          : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                       }`}
                     >
-                      <span className="font-bold text-[10px] text-amber-400">Step {step.step_order}:</span>
+                      <span className="font-bold text-[10px] text-amber-700">Step {step.step_order}:</span>
                       <span>{step.source.split(':').pop()}</span>
-                      <span className="text-slate-500 text-[10px]">[{step.relation}]</span>
+                      <span className="text-gray-400 text-[10px]">[{step.relation}]</span>
                       <span>{step.target.split(':').pop()}</span>
                     </button>
                   </div>
@@ -396,27 +396,27 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
       )}
 
       {/* Main Canvas Card */}
-      <div className="relative rounded-xl border border-border bg-[#080d1a] overflow-hidden select-none">
+      <div className="relative rounded-lg border border-gray-200 bg-white overflow-hidden select-none shadow-sm">
         {/* Graph Control Toolbar */}
-        <div className="absolute top-3 left-3 z-10 flex items-center space-x-1.5 bg-[#0d1424]/90 backdrop-blur-md p-1.5 rounded-lg border border-border shadow-lg">
+        <div className="absolute top-3 left-3 z-10 flex items-center space-x-1 bg-white/95 backdrop-blur-sm p-1 rounded-md border border-gray-200 shadow-sm">
           <button
             onClick={() => handleZoom(0.2)}
             title="Zoom In"
-            className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-slate-700/60 transition-colors"
+            className="p-1.5 rounded text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
           >
             <ZoomIn className="w-4 h-4" />
           </button>
           <button
             onClick={() => handleZoom(-0.2)}
             title="Zoom Out"
-            className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-slate-700/60 transition-colors"
+            className="p-1.5 rounded text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
           >
             <ZoomOut className="w-4 h-4" />
           </button>
           <button
             onClick={handleResetView}
             title="Reset / Fit View"
-            className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-slate-700/60 transition-colors"
+            className="p-1.5 rounded text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
           >
             <Maximize2 className="w-4 h-4" />
           </button>
@@ -425,21 +425,21 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
               onClick={() => onRefreshGraph()}
               disabled={isRefreshing}
               title="Refresh Graph from Stored Events"
-              className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-slate-700/60 transition-colors disabled:opacity-50"
+              className="p-1.5 rounded text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors disabled:opacity-50"
             >
-              <RotateCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-blue-400' : ''}`} />
+              <RotateCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-blue-600' : ''}`} />
             </button>
           )}
-          <span className="text-[11px] font-mono text-slate-400 px-2 border-l border-border">
+          <span className="text-xs font-mono text-gray-500 px-2 border-l border-gray-200">
             {Math.round(zoom * 100)}%
           </span>
         </div>
 
         {/* Bounded Graph Info Pill */}
         {isBounded && (
-          <div className="absolute top-3 right-3 z-10 flex items-center space-x-1.5 bg-amber-950/80 border border-amber-800/80 text-amber-300 px-3 py-1 rounded-md text-[11px]">
-            <Info className="w-3.5 h-3.5 shrink-0" />
-            <span>Graph bounded to top {MAX_DISPLAY_NODES} active entities for forensic readability</span>
+          <div className="absolute top-3 right-3 z-10 flex items-center space-x-1.5 bg-amber-50 border border-amber-200 text-amber-800 px-2.5 py-1 rounded text-xs shadow-sm">
+            <Info className="w-3.5 h-3.5 shrink-0 text-amber-600" />
+            <span>Top {MAX_DISPLAY_NODES} active entities shown</span>
           </div>
         )}
 
@@ -447,7 +447,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
         <svg
           ref={svgRef}
           viewBox="0 0 800 500"
-          className="w-full h-[520px] cursor-grab active:cursor-grabbing"
+          className="w-full h-[520px] bg-[#F9FAFB] cursor-grab active:cursor-grabbing"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -467,7 +467,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
               markerHeight="6"
               orient="auto"
             >
-              <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#94A3B8" />
             </marker>
             <marker
               id="graph-arrow-active"
@@ -478,7 +478,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
               markerHeight="6"
               orient="auto"
             >
-              <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563EB" />
             </marker>
             <marker
               id="graph-arrow-path"
@@ -489,7 +489,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
               markerHeight="6"
               orient="auto"
             >
-              <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#D97706" />
             </marker>
           </defs>
 
@@ -515,19 +515,19 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
               const midX = (src.x + tgt.x) / 2;
               const midY = (src.y + tgt.y) / 2;
 
-              let strokeColor = '#334155';
+              let strokeColor = '#CBD5E1';
               let markerEnd = 'url(#graph-arrow)';
               let strokeWidth = 1.5;
 
               if (isInAttackPath) {
-                strokeColor = '#f59e0b';
+                strokeColor = '#D97706';
                 markerEnd = 'url(#graph-arrow-path)';
                 strokeWidth = 2.5;
               }
               if (isHighlighted) {
-                strokeColor = '#38bdf8';
+                strokeColor = '#2563EB';
                 markerEnd = 'url(#graph-arrow-active)';
-                strokeWidth = 3;
+                strokeWidth = 2.5;
               }
 
               return (
@@ -552,7 +552,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
                     opacity={
                       (selectedNode && !isHighlighted) ||
                       (selectedAttackPathId && !isInAttackPath && !isHighlighted)
-                        ? 0.25
+                        ? 0.3
                         : 0.95
                     }
                     className="transition-all duration-200"
@@ -565,19 +565,19 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
                       width={84}
                       height={20}
                       rx={4}
-                      fill="#0f172a"
+                      fill="#FFFFFF"
                       stroke={
                         isHighlighted
-                          ? '#0284c7'
+                          ? '#2563EB'
                           : isInAttackPath
-                          ? '#b45309'
-                          : '#1e293b'
+                          ? '#D97706'
+                          : '#E2E8F0'
                       }
                       strokeWidth={1}
                       opacity={
                         (selectedNode && !isHighlighted) ||
                         (selectedAttackPathId && !isInAttackPath && !isHighlighted)
-                          ? 0.3
+                          ? 0.35
                           : 0.95
                       }
                     />
@@ -589,10 +589,10 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
                       fontWeight={600}
                       fill={
                         isHighlighted
-                          ? '#7dd3fc'
+                          ? '#1D4ED8'
                           : isInAttackPath
-                          ? '#fcd34d'
-                          : '#94a3b8'
+                          ? '#B45309'
+                          : '#64748B'
                       }
                       fontFamily="monospace"
                     >
@@ -623,25 +623,23 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
                     setSelectedEdge(null);
                   }}
                   className="cursor-pointer transition-transform duration-150 hover:scale-105"
-                  opacity={isDimmed ? 0.25 : 1}
+                  opacity={isDimmed ? 0.3 : 1}
                 >
                   {/* Outer Selection or Path Ring */}
                   {isSelected && (
                     <circle
-                      r={26}
+                      r={25}
                       fill="none"
-                      stroke="#38bdf8"
+                      stroke="#2563EB"
                       strokeWidth={2}
                       strokeDasharray="4 2"
-                      className="animate-spin"
-                      style={{ animationDuration: '8s' }}
                     />
                   )}
                   {isInAttackPath && !isSelected && (
                     <circle
                       r={24}
                       fill="none"
-                      stroke="#f59e0b"
+                      stroke="#D97706"
                       strokeWidth={1.8}
                       strokeDasharray="3 1"
                     />
@@ -653,13 +651,12 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
                     fill={colors.fill}
                     stroke={
                       isSelected
-                        ? '#38bdf8'
+                        ? '#2563EB'
                         : isInAttackPath
-                        ? '#f59e0b'
+                        ? '#D97706'
                         : colors.stroke
                     }
-                    strokeWidth={isSelected || isInAttackPath ? 2.5 : 1.8}
-                    filter="drop-shadow(0 4px 6px rgba(0, 0, 0, 0.4))"
+                    strokeWidth={isSelected || isInAttackPath ? 2.5 : 1.5}
                   />
 
                   {/* Icon / Fallback Symbol */}
@@ -681,9 +678,9 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
                     y={32}
                     textAnchor="middle"
                     fontSize={9.5}
-                    fontWeight={600}
-                    fill={isSelected ? '#ffffff' : '#cbd5e1'}
-                    className="pointer-events-none drop-shadow"
+                    fontWeight={500}
+                    fill={isSelected ? '#1D4ED8' : '#374151'}
+                    className="pointer-events-none"
                   >
                     {node.label.length > 20 ? `${node.label.substring(0, 18)}...` : node.label}
                   </text>
@@ -694,64 +691,64 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
         </svg>
 
         {/* Graph Legend & Integrity Note */}
-        <div className="p-3 bg-[#0a0f1d] border-t border-border flex flex-wrap items-center justify-between text-xs gap-3">
+        <div className="p-3 bg-white border-t border-gray-200 flex flex-wrap items-center justify-between text-xs gap-3">
           <div className="flex items-center space-x-3.5 flex-wrap">
-            <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-mono text-gray-500 uppercase tracking-wider">
               Entities:
             </span>
             <div className="flex items-center space-x-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" />
-              <span className="text-slate-300 text-[11px]">Host</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+              <span className="text-gray-700 text-xs">Host</span>
             </div>
             <div className="flex items-center space-x-1">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-              <span className="text-slate-300 text-[11px]">User</span>
+              <span className="text-gray-700 text-xs">User</span>
             </div>
             <div className="flex items-center space-x-1">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <span className="text-slate-300 text-[11px]">IP Address</span>
+              <span className="text-gray-700 text-xs">IP Address</span>
             </div>
             <div className="flex items-center space-x-1">
               <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
-              <span className="text-slate-300 text-[11px]">Process</span>
+              <span className="text-gray-700 text-xs">Process</span>
             </div>
             <div className="flex items-center space-x-1">
               <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-              <span className="text-slate-300 text-[11px]">File</span>
+              <span className="text-gray-700 text-xs">File</span>
             </div>
             <div className="flex items-center space-x-1">
               <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-              <span className="text-slate-300 text-[11px]">Alert</span>
+              <span className="text-gray-700 text-xs">Alert</span>
             </div>
             <div className="flex items-center space-x-1">
               <span className="w-2.5 h-2.5 rounded-full bg-orange-500" />
-              <span className="text-slate-300 text-[11px]">Indicator</span>
+              <span className="text-gray-700 text-xs">Indicator</span>
             </div>
           </div>
 
-          <div className="text-[11px] text-slate-500 italic max-w-lg text-right">
-            Evidence-backed relationships only. Provenance and confidence verified against event records.
+          <div className="text-xs text-gray-500 max-w-lg text-right">
+            Evidence-backed relationships only. Provenance verified against event records.
           </div>
         </div>
 
         {/* Selected Node Details Drawer */}
         {selectedNode && (
-          <div className="absolute top-3 right-3 z-20 w-84 bg-[#0d1424]/95 backdrop-blur-md rounded-xl border border-blue-500/40 p-4 shadow-2xl space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-border">
+          <div className="absolute top-3 right-3 z-20 w-80 bg-white/98 rounded-lg border border-gray-300 p-4 shadow-lg space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-gray-200">
               <div className="flex items-center space-x-2">
                 {getNodeIcon(selectedNode.type)}
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                  <span className="text-[10px] uppercase font-bold text-gray-500 block">
                     {selectedNode.type} Entity
                   </span>
-                  <span className="text-xs font-bold text-white font-mono break-all">
+                  <span className="text-xs font-bold text-gray-900 font-mono break-all">
                     {selectedNode.label}
                   </span>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedNode(null)}
-                className="text-slate-400 hover:text-white p-1 rounded"
+                className="text-gray-400 hover:text-gray-600 p-1 rounded"
                 title="Close panel"
               >
                 <X className="w-4 h-4" />
@@ -759,33 +756,33 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
             </div>
 
             <div>
-              <span className="text-[10px] uppercase font-mono text-slate-400 block mb-1">
+              <span className="text-[10px] uppercase font-mono text-gray-500 block mb-1">
                 Composite Identifier:
               </span>
-              <span className="text-xs font-mono text-cyan-300 bg-surface px-2 py-1 rounded block border border-border break-all">
+              <span className="text-xs font-mono text-gray-800 bg-gray-50 px-2 py-1 rounded block border border-gray-200 break-all">
                 {selectedNode.id}
               </span>
             </div>
 
             {/* Observations count */}
             {selectedNode.observation_count && (
-              <div className="flex items-center justify-between text-xs bg-surface p-2 rounded border border-border">
-                <span className="text-slate-400">Total Observations:</span>
-                <span className="font-mono text-white font-bold">{selectedNode.observation_count}</span>
+              <div className="flex items-center justify-between text-xs bg-gray-50 p-2 rounded border border-gray-200">
+                <span className="text-gray-600">Total Observations:</span>
+                <span className="font-mono text-gray-900 font-bold">{selectedNode.observation_count}</span>
               </div>
             )}
 
             {/* Node Properties */}
             {selectedNode.properties && Object.keys(selectedNode.properties).length > 0 && (
               <div>
-                <span className="text-[10px] uppercase font-mono text-slate-400 block mb-1.5">
+                <span className="text-[10px] uppercase font-mono text-gray-500 block mb-1.5">
                   Observed Properties:
                 </span>
-                <div className="max-h-36 overflow-y-auto space-y-1 text-[11px] font-mono bg-surface p-2 rounded border border-border">
+                <div className="max-h-36 overflow-y-auto space-y-1 text-xs font-mono bg-gray-50 p-2 rounded border border-gray-200">
                   {Object.entries(selectedNode.properties).map(([k, v]) => (
-                    <div key={k} className="flex justify-between border-b border-border/40 pb-0.5">
-                      <span className="text-slate-400">{k}:</span>
-                      <span className="text-white text-right break-all ml-2">
+                    <div key={k} className="flex justify-between border-b border-gray-200 pb-0.5">
+                      <span className="text-gray-500">{k}:</span>
+                      <span className="text-gray-900 text-right break-all ml-2 font-medium">
                         {typeof v === 'object' ? JSON.stringify(v) : String(v)}
                       </span>
                     </div>
@@ -801,7 +798,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
               const mitreList = rawMitre as string[];
               return (
                 <div>
-                  <span className="text-[10px] uppercase font-mono text-purple-400 font-bold block mb-1">
+                  <span className="text-[10px] uppercase font-mono text-purple-700 font-bold block mb-1">
                     MITRE ATT&CK Techniques:
                   </span>
                   <div className="flex flex-wrap gap-1">
@@ -811,7 +808,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
                         href={`https://attack.mitre.org/techniques/${String(tid).replace('.', '/')}/`}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-2 py-0.5 rounded bg-purple-950/60 border border-purple-500/50 text-purple-300 font-mono text-[10px] font-bold hover:bg-purple-800/60 transition-colors"
+                        className="px-2 py-0.5 rounded bg-purple-50 border border-purple-200 text-purple-700 font-mono text-[10px] font-bold hover:bg-purple-100 transition-colors"
                       >
                         {String(tid)}
                       </a>
@@ -825,7 +822,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
             {onSelectEntityForTimeline && (
               <button
                 onClick={() => onSelectEntityForTimeline(selectedNode.id)}
-                className="w-full flex items-center justify-center space-x-2 px-3 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 text-xs font-medium transition-colors"
+                className="w-full flex items-center justify-center space-x-2 px-3 py-1.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-medium transition-colors"
               >
                 <Filter className="w-3.5 h-3.5" />
                 <span>Filter Forensic Timeline to this Entity</span>
@@ -836,50 +833,50 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
 
         {/* Selected Edge Details Drawer */}
         {selectedEdge && (
-          <div className="absolute top-3 right-3 z-20 w-84 bg-[#0d1424]/95 backdrop-blur-md rounded-xl border border-cyan-500/40 p-4 shadow-2xl space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-border">
+          <div className="absolute top-3 right-3 z-20 w-80 bg-white/98 rounded-lg border border-gray-300 p-4 shadow-lg space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-gray-200">
               <div className="flex items-center space-x-2">
-                <Route className="w-4 h-4 text-cyan-400" />
+                <Route className="w-4 h-4 text-blue-600" />
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                  <span className="text-[10px] uppercase font-bold text-gray-500 block">
                     Relationship Inspection
                   </span>
-                  <span className="text-xs font-bold text-cyan-300 font-mono">
+                  <span className="text-xs font-bold text-blue-700 font-mono">
                     {selectedEdge.relation}
                   </span>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedEdge(null)}
-                className="text-slate-400 hover:text-white p-1 rounded"
+                className="text-gray-400 hover:text-gray-600 p-1 rounded"
                 title="Close panel"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-1 text-xs bg-surface p-2.5 rounded border border-border font-mono">
-              <div className="flex items-center space-x-1.5 text-slate-300">
-                <span className="text-slate-400 text-[10px]">SRC:</span>
-                <span className="text-cyan-300 font-bold break-all">{selectedEdge.source}</span>
+            <div className="space-y-1 text-xs bg-gray-50 p-2.5 rounded border border-gray-200 font-mono">
+              <div className="flex items-center space-x-1.5 text-gray-700">
+                <span className="text-gray-500 text-[10px]">SRC:</span>
+                <span className="text-gray-900 font-semibold break-all">{selectedEdge.source}</span>
               </div>
-              <div className="flex items-center space-x-1.5 text-slate-300">
-                <span className="text-slate-400 text-[10px]">TGT:</span>
-                <span className="text-amber-300 font-bold break-all">{selectedEdge.target}</span>
+              <div className="flex items-center space-x-1.5 text-gray-700">
+                <span className="text-gray-500 text-[10px]">TGT:</span>
+                <span className="text-gray-900 font-semibold break-all">{selectedEdge.target}</span>
               </div>
             </div>
 
             {/* Confidence & Provenance Badges */}
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-surface p-2 rounded border border-border">
-                <span className="text-[10px] text-slate-400 block uppercase">Confidence</span>
-                <span className="text-xs font-bold text-emerald-400 font-mono">
+              <div className="bg-gray-50 p-2 rounded border border-gray-200">
+                <span className="text-[10px] text-gray-500 block uppercase">Confidence</span>
+                <span className="text-xs font-bold text-emerald-700 font-mono">
                   {Math.round((selectedEdge.confidence ?? 1.0) * 100)}%
                 </span>
               </div>
-              <div className="bg-surface p-2 rounded border border-border">
-                <span className="text-[10px] text-slate-400 block uppercase">Provenance</span>
-                <span className="text-xs font-bold text-blue-400 font-mono truncate block">
+              <div className="bg-gray-50 p-2 rounded border border-gray-200">
+                <span className="text-[10px] text-gray-500 block uppercase">Provenance</span>
+                <span className="text-xs font-bold text-blue-700 font-mono truncate block">
                   {selectedEdge.provenance || 'telemetry'}
                 </span>
               </div>
@@ -887,7 +884,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
 
             {/* Description if present */}
             {selectedEdge.description && (
-              <p className="text-xs text-slate-300 bg-surface/70 p-2 rounded border border-border/60 italic">
+              <p className="text-xs text-gray-600 bg-gray-50 p-2 rounded border border-gray-200 italic">
                 {selectedEdge.description}
               </p>
             )}
@@ -895,20 +892,20 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
             {/* Evidence References */}
             {selectedEdge.evidence_event_ids && selectedEdge.evidence_event_ids.length > 0 && (
               <div>
-                <span className="text-[10px] uppercase font-mono text-slate-400 block mb-1">
+                <span className="text-[10px] uppercase font-mono text-gray-500 block mb-1">
                   Supporting Event Evidence ({selectedEdge.evidence_event_ids.length}):
                 </span>
-                <div className="space-y-1 max-h-28 overflow-y-auto font-mono text-[11px]">
+                <div className="space-y-1 max-h-28 overflow-y-auto font-mono text-xs">
                   {selectedEdge.evidence_event_ids.map((evId) => (
                     <div
                       key={evId}
-                      className="flex items-center justify-between bg-surface px-2 py-1 rounded border border-border hover:border-cyan-500/50 transition-colors"
+                      className="flex items-center justify-between bg-gray-50 px-2 py-1 rounded border border-gray-200 hover:border-blue-300 transition-colors"
                     >
-                      <span className="text-slate-300 truncate mr-2">{evId}</span>
+                      <span className="text-gray-700 truncate mr-2">{evId}</span>
                       {onSelectEventForTimeline && (
                         <button
                           onClick={() => onSelectEventForTimeline(evId)}
-                          className="text-[10px] text-cyan-400 hover:text-cyan-200 shrink-0 font-bold"
+                          className="text-[10px] text-blue-600 hover:text-blue-800 shrink-0 font-bold"
                         >
                           View
                         </button>

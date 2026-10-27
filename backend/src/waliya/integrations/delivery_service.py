@@ -1,10 +1,11 @@
 """Reliable notification delivery engine with bounded retries, SSRF defense, and loop suppression."""
 
+import asyncio
 import logging
 import random
 import time
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import UUID, uuid4
 
 import httpx
@@ -17,6 +18,7 @@ from waliya.db.models import (
     NotificationDestinationModel,
     utc_now,
 )
+from waliya.db.session import async_session_factory
 from waliya.integrations.network_security import (
     MAX_RESPONSE_BYTES,
     SSRFValidationError,
@@ -148,13 +150,23 @@ class NotificationDeliveryService:
             return delivery
 
         # 2. Build HMAC-SHA256 signature and canonical headers
-        headers, canonical_bytes = build_signed_headers(
-            delivery_id=delivery.delivery_id,
-            event_type=delivery.event_type,
-            timestamp=delivery.created_at,
-            payload_dict=delivery.payload,
-            secret_ciphertext=destination.signing_secret_enc,
-        )
+        try:
+            headers, canonical_bytes = build_signed_headers(
+                delivery_id=delivery.delivery_id,
+                event_type=delivery.event_type,
+                timestamp=delivery.created_at,
+                payload_dict=delivery.payload,
+                secret_ciphertext=destination.signing_secret_enc,
+            )
+        except Exception as sign_err:
+            sanitized_err = f"Failed to construct signed headers: {sign_err}"
+            logger.warning("Header signing failed for delivery %s: %s", delivery.delivery_id, sanitized_err)
+            delivery.status = "PERMANENTLY_FAILED"
+            delivery.error_message = sanitized_err
+            destination.last_delivery_at = utc_now()
+            destination.last_delivery_status = "FAILED"
+            destination.last_delivery_error = sanitized_err
+            return delivery
 
         # 3. Safe Outbound HTTP Dispatch (follow_redirects=False, bounded timeouts)
         close_client_after = False
@@ -323,9 +335,10 @@ class NotificationDeliveryService:
         await session.commit()
         return delivery
 
-    @staticmethod
+    @classmethod
     async def process_pending_deliveries(
-        session: AsyncSession,
+        cls,
+        session: Optional[AsyncSession] = None,
         batch_size: int = 50,
         allow_local_for_testing: bool = False,
         http_client: Optional[httpx.AsyncClient] = None,
@@ -335,6 +348,52 @@ class NotificationDeliveryService:
         Returns:
             Number of successfully delivered notifications.
         """
+        delivered_count, _ = await cls._process_deliveries_batch(
+            session=session,
+            batch_size=batch_size,
+            allow_local_for_testing=allow_local_for_testing,
+            http_client=http_client,
+        )
+        return delivered_count
+
+    @classmethod
+    async def _process_deliveries_batch(
+        cls,
+        session: Optional[AsyncSession] = None,
+        batch_size: int = 50,
+        allow_local_for_testing: bool = False,
+        http_client: Optional[httpx.AsyncClient] = None,
+    ) -> Tuple[int, int]:
+        """Process a batch of pending deliveries, managing a dedicated session if omitted.
+
+        Returns:
+            Tuple of (delivered_count, claimed_count).
+        """
+        if session is not None:
+            return await cls._execute_deliveries_with_session(
+                session=session,
+                batch_size=batch_size,
+                allow_local_for_testing=allow_local_for_testing,
+                http_client=http_client,
+            )
+
+        async with async_session_factory() as managed_session:
+            return await cls._execute_deliveries_with_session(
+                session=managed_session,
+                batch_size=batch_size,
+                allow_local_for_testing=allow_local_for_testing,
+                http_client=http_client,
+            )
+
+    @classmethod
+    async def _execute_deliveries_with_session(
+        cls,
+        session: AsyncSession,
+        batch_size: int = 50,
+        allow_local_for_testing: bool = False,
+        http_client: Optional[httpx.AsyncClient] = None,
+    ) -> Tuple[int, int]:
+        """Execute delivery batch under row-level FOR UPDATE SKIP LOCKED guarantee."""
         now = utc_now()
         query = (
             select(NotificationDeliveryModel)
@@ -357,8 +416,9 @@ class NotificationDeliveryService:
         deliveries = result.scalars().all()
 
         if not deliveries:
-            return 0
+            return 0, 0
 
+        claimed_count = len(deliveries)
         delivered_count = 0
         managed_client: Optional[httpx.AsyncClient] = None
         client_to_use = http_client
@@ -368,17 +428,68 @@ class NotificationDeliveryService:
 
         try:
             for delivery in deliveries:
-                await NotificationDeliveryService.dispatch_delivery(
-                    session=session,
-                    delivery=delivery,
-                    allow_local_for_testing=allow_local_for_testing,
-                    http_client=client_to_use,
-                )
-                if delivery.status == "DELIVERED":
-                    delivered_count += 1
+                try:
+                    await cls.dispatch_delivery(
+                        session=session,
+                        delivery=delivery,
+                        allow_local_for_testing=allow_local_for_testing,
+                        http_client=client_to_use,
+                    )
+                    if delivery.status == "DELIVERED":
+                        delivered_count += 1
+                except Exception as deliv_err:
+                    logger.error(
+                        "Unexpected error dispatching delivery %s: %s",
+                        delivery.delivery_id,
+                        deliv_err,
+                    )
+                    delivery.status = "PERMANENTLY_FAILED"
+                    delivery.error_message = f"Unhandled dispatch exception: {deliv_err}"
+                    delivery.updated_at = utc_now()
 
             await session.commit()
-            return delivered_count
+            return delivered_count, claimed_count
+        except Exception:
+            await session.rollback()
+            raise
         finally:
             if managed_client is not None:
                 await managed_client.aclose()
+
+    @classmethod
+    async def run_delivery_worker(
+        cls,
+        stop_event: asyncio.Event,
+        batch_size: int = 50,
+        poll_interval_seconds: float = 3.0,
+        allow_local_for_testing: bool = False,
+    ) -> None:
+        """Autonomous delivery dispatcher loop executing until stop_event is set.
+
+        Continuously fetches and processes pending deliveries and scheduled retries.
+        Uses PostgreSQL SKIP LOCKED row-level locking for safe concurrent execution across workers.
+        """
+        logger.info("Outbound notification delivery background loop started.")
+        while not stop_event.is_set():
+            claimed = 0
+            try:
+                _, claimed = await cls._process_deliveries_batch(
+                    session=None,
+                    batch_size=batch_size,
+                    allow_local_for_testing=allow_local_for_testing,
+                )
+                if claimed > 0:
+                    # More deliveries may be waiting, loop immediately to drain backlog
+                    await asyncio.sleep(0.01)
+                    continue
+            except asyncio.CancelledError:
+                break
+            except Exception as loop_err:
+                logger.error("Error in outbound notification delivery worker loop: %s", loop_err)
+
+            try:
+                await asyncio.wait_for(stop_event.wait(), timeout=poll_interval_seconds)
+            except (asyncio.TimeoutError, TimeoutError):
+                pass
+
+        logger.info("Outbound notification delivery background loop stopped.")

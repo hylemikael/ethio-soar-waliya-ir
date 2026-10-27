@@ -99,35 +99,35 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
   const getSeverityBadge = (sev: Severity) => {
     switch (sev) {
       case 'CRITICAL':
-        return 'bg-red-950/80 text-red-300 border-red-800/80';
+        return 'bg-red-50 text-red-700 border-red-200';
       case 'HIGH':
-        return 'bg-orange-950/80 text-orange-300 border-orange-800/80';
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'MEDIUM':
-        return 'bg-yellow-950/80 text-yellow-300 border-yellow-800/80';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'LOW':
-        return 'bg-blue-950/80 text-blue-300 border-blue-800/80';
+        return 'bg-gray-50 text-gray-700 border-gray-200';
       default:
-        return 'bg-slate-800 text-slate-300 border-slate-700';
+        return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
 
   const getRiskScoreColor = (score: number) => {
-    if (score >= 80) return 'text-red-400 font-bold';
-    if (score >= 60) return 'text-orange-400 font-semibold';
-    if (score >= 40) return 'text-yellow-400 font-medium';
-    return 'text-emerald-400';
+    if (score >= 80) return 'text-red-600 font-bold';
+    if (score >= 60) return 'text-amber-600 font-semibold';
+    if (score >= 40) return 'text-yellow-600 font-medium';
+    return 'text-emerald-600';
   };
 
   if (loading && !overview) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-24 bg-surface rounded-xl border border-border" />
+      <div className="space-y-6">
+        <div className="h-24 bg-gray-50 rounded-lg border border-gray-200 animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 bg-surface rounded-xl border border-border" />
+            <div key={i} className="h-28 bg-gray-50 rounded-lg border border-gray-200 animate-pulse" />
           ))}
         </div>
-        <div className="h-64 bg-surface rounded-xl border border-border" />
+        <div className="h-64 bg-gray-50 rounded-lg border border-gray-200 animate-pulse" />
       </div>
     );
   }
@@ -136,21 +136,21 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
     <div className="space-y-6">
       {/* Auth Banner if unauthenticated */}
       {authRequired && (
-        <div className="p-4 rounded-xl border border-blue-500/30 bg-blue-950/30 flex items-center justify-between">
+        <div className="p-4 rounded-lg border border-blue-200 bg-blue-50/60 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-lg bg-blue-600/20 text-blue-400">
+            <div className="p-2 rounded bg-blue-100 text-blue-700">
               <Lock className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-white">Administrator Authentication Required</h4>
-              <p className="text-xs text-slate-400">
+              <h4 className="text-sm font-semibold text-gray-900">Administrator Authentication Required</h4>
+              <p className="text-xs text-gray-600">
                 Live operational telemetry and incident metrics require an authenticated session.
               </p>
             </div>
           </div>
           <button
             onClick={onOpenLogin}
-            className="flex items-center space-x-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-md transition-colors"
+            className="flex items-center space-x-1.5 px-3.5 py-2 rounded text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors"
           >
             <Lock className="w-3.5 h-3.5" />
             <span>Sign In to Unlock Live Data</span>
@@ -160,17 +160,17 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
 
       {/* Backend Unreachable Banner */}
       {error && !authRequired && (
-        <div className="p-4 rounded-xl border border-red-500/30 bg-red-950/30 flex items-center justify-between">
+        <div className="p-4 rounded-lg border border-red-200 bg-red-50/60 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <AlertTriangle className="w-5 h-5 text-red-400" />
+            <AlertTriangle className="w-5 h-5 text-red-600" />
             <div>
-              <h4 className="text-sm font-semibold text-white">Telemetry Pipeline Warning</h4>
-              <p className="text-xs text-red-300">{error}</p>
+              <h4 className="text-sm font-semibold text-gray-900">Telemetry Pipeline Warning</h4>
+              <p className="text-xs text-red-700">{error}</p>
             </div>
           </div>
           <button
             onClick={() => fetchOverview(true)}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-900/40 hover:bg-red-900/60 text-red-200 border border-red-800 transition-colors"
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded text-xs font-medium bg-white hover:bg-red-50 text-red-700 border border-red-300 transition-colors shadow-sm"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Retry</span>
@@ -181,58 +181,58 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
       {/* Security Posture Banner */}
       {overview && (
         <div
-          className={`p-5 rounded-xl border transition-all ${
+          className={`p-4 rounded-lg border bg-white shadow-sm transition-all ${
             overview.security_posture === 'CRITICAL'
-              ? 'bg-gradient-to-r from-red-950/50 to-surface border-red-800/80'
+              ? 'border-l-4 border-l-red-600 border-gray-200 bg-red-50/20'
               : overview.security_posture === 'ELEVATED'
-              ? 'bg-gradient-to-r from-amber-950/50 to-surface border-amber-800/80'
-              : 'bg-gradient-to-r from-emerald-950/40 to-surface border-emerald-800/60'
+              ? 'border-l-4 border-l-amber-500 border-gray-200 bg-amber-50/20'
+              : 'border-l-4 border-l-emerald-600 border-gray-200'
           }`}
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center space-x-4">
               <div
-                className={`p-3 rounded-xl border ${
+                className={`p-2.5 rounded-lg border ${
                   overview.security_posture === 'CRITICAL'
-                    ? 'bg-red-600/20 text-red-400 border-red-500/40 animate-pulse'
+                    ? 'bg-red-50 text-red-700 border-red-200'
                     : overview.security_posture === 'ELEVATED'
-                    ? 'bg-amber-600/20 text-amber-400 border-amber-500/40'
-                    : 'bg-emerald-600/20 text-emerald-400 border-emerald-500/40'
+                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                 }`}
               >
                 {overview.security_posture === 'CRITICAL' ? (
-                  <ShieldAlert className="w-8 h-8" />
+                  <ShieldAlert className="w-7 h-7" />
                 ) : overview.security_posture === 'ELEVATED' ? (
-                  <AlertOctagon className="w-8 h-8" />
+                  <AlertOctagon className="w-7 h-7" />
                 ) : (
-                  <ShieldCheck className="w-8 h-8" />
+                  <ShieldCheck className="w-7 h-7" />
                 )}
               </div>
               <div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-xs font-mono uppercase tracking-wider text-slate-400">
+                  <span className="text-xs uppercase tracking-wider text-gray-500 font-medium">
                     Defensive Posture:
                   </span>
                   <span
-                    className={`text-sm font-black px-2.5 py-0.5 rounded border uppercase ${
+                    className={`text-xs font-bold px-2 py-0.5 rounded border uppercase ${
                       overview.security_posture === 'CRITICAL'
-                        ? 'bg-red-950 text-red-300 border-red-700'
+                        ? 'bg-red-100 text-red-800 border-red-200'
                         : overview.security_posture === 'ELEVATED'
-                        ? 'bg-amber-950 text-amber-300 border-amber-700'
-                        : 'bg-emerald-950 text-emerald-300 border-emerald-700'
+                        ? 'bg-amber-100 text-amber-800 border-amber-200'
+                        : 'bg-emerald-100 text-emerald-800 border-emerald-200'
                     }`}
                   >
                     {overview.security_posture}
                   </span>
                 </div>
-                <p className="text-sm font-semibold text-white mt-1">{overview.posture_reason}</p>
-                <div className="flex items-center space-x-3 text-[11px] text-slate-400 mt-1">
+                <p className="text-sm font-semibold text-gray-900 mt-1">{overview.posture_reason}</p>
+                <div className="flex items-center space-x-3 text-xs text-gray-500 mt-1">
                   <span className="flex items-center space-x-1">
-                    <Clock className="w-3 h-3 text-slate-500" />
+                    <Clock className="w-3 h-3 text-gray-400" />
                     <span>Updated: {new Date(overview.generated_at).toLocaleTimeString()}</span>
                   </span>
                   <span>&bull;</span>
-                  <span>Polling Interval: 15s</span>
+                  <span>Polling: 15s</span>
                 </div>
               </div>
             </div>
@@ -241,7 +241,7 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
               <button
                 onClick={() => fetchOverview(true)}
                 disabled={refreshing}
-                className="flex items-center space-x-1.5 px-3.5 py-2 rounded-lg text-xs font-medium bg-surface-elevated hover:bg-slate-700 text-slate-200 border border-border transition-colors disabled:opacity-50"
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded text-xs font-medium bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 shadow-sm transition-colors disabled:opacity-50"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
                 <span>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
@@ -254,20 +254,20 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
       {/* Top Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Agents Card */}
-        <div className="p-4 rounded-xl border border-border bg-surface shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-slate-400">Connected Agents</span>
-            <Radio className="w-4 h-4 text-emerald-400" />
+        <div className="p-4 rounded-lg border border-gray-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-medium text-gray-500">Connected Agents</span>
+            <Radio className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="flex items-baseline space-x-2">
-            <span className="text-2xl font-bold text-white">
+            <span className="text-2xl font-bold text-gray-900">
               {overview ? overview.agents.online : 0}
             </span>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-gray-500">
               / {overview ? overview.agents.total : 0} registered
             </span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             {overview
               ? `${overview.agents.percentage_healthy}% healthy (${overview.agents.degraded} degraded, ${overview.agents.offline} offline)`
               : 'Active Linux endpoint sensors'}
@@ -275,42 +275,42 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
         </div>
 
         {/* Telemetry Ingestion Card */}
-        <div className="p-4 rounded-xl border border-border bg-surface shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-slate-400">24h Ingested Events</span>
-            <Activity className="w-4 h-4 text-blue-400" />
+        <div className="p-4 rounded-lg border border-gray-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-medium text-gray-500">24h Ingested Events</span>
+            <Activity className="w-4 h-4 text-blue-600" />
           </div>
-          <div className="text-2xl font-bold text-white">
-            {overview ? overview.events_24h.total_24h.toLocaleString() : 0}
+          <div className="text-2xl font-bold text-gray-900">
+            {(overview?.events_24h?.total_24h ?? 0).toLocaleString()}
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             Normalized across FIM, process, auth & network
           </p>
         </div>
 
         {/* Active Incidents Card */}
-        <div className="p-4 rounded-xl border border-border bg-surface shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-slate-400">Active Incidents</span>
+        <div className="p-4 rounded-lg border border-gray-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-medium text-gray-500">Active Incidents</span>
             <span
               className={`w-2.5 h-2.5 rounded-full ${
                 overview && overview.incidents.open_count + overview.incidents.investigating_count > 0
-                  ? 'bg-amber-400 animate-ping'
-                  : 'bg-emerald-400'
+                  ? 'bg-amber-500'
+                  : 'bg-emerald-500'
               }`}
             />
           </div>
           <div className="flex items-baseline space-x-2">
-            <span className="text-2xl font-bold text-white">
+            <span className="text-2xl font-bold text-gray-900">
               {overview
                 ? overview.incidents.open_count + overview.incidents.investigating_count
                 : 0}
             </span>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-gray-500">
               / {overview ? overview.incidents.total : 0} total
             </span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             {overview
               ? `${overview.incidents.open_count} open, ${overview.incidents.investigating_count} investigating`
               : 'Requiring analyst investigation'}
@@ -318,47 +318,47 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
         </div>
 
         {/* Containment Actions Card */}
-        <div className="p-4 rounded-xl border border-border bg-surface shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-slate-400">Containment Actions</span>
-            <HardDrive className="w-4 h-4 text-purple-400" />
+        <div className="p-4 rounded-lg border border-gray-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-medium text-gray-500">Containment Actions</span>
+            <HardDrive className="w-4 h-4 text-blue-600" />
           </div>
           <div className="flex items-baseline space-x-2">
-            <span className="text-2xl font-bold text-white">
+            <span className="text-2xl font-bold text-gray-900">
               {overview ? overview.responses.total_actions : 0}
             </span>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-gray-500">
               ({overview?.responses.by_status['VERIFIED_CONTAINED'] || 0} verified)
             </span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             Cryptographically signed SOAR responses
           </p>
         </div>
       </div>
 
       {/* Pipeline & Infrastructure Stream Health */}
-      <div className="rounded-xl border border-border bg-surface p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-border mb-4 gap-2">
+      <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-gray-200 mb-4 gap-2">
           <div className="flex items-center space-x-2.5">
-            <Database className="w-4 h-4 text-cyan-400" />
-            <h3 className="text-sm font-semibold text-white">Stream Pipeline & Outbox Telemetry</h3>
+            <Database className="w-4 h-4 text-blue-600" />
+            <h3 className="text-sm font-semibold text-gray-900">Stream Pipeline & Outbox Telemetry</h3>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-xs font-mono text-slate-400 bg-surface-elevated px-2 py-0.5 rounded border border-border">
+            <span className="text-xs font-mono text-gray-600 bg-gray-50 px-2 py-0.5 rounded border border-gray-200">
               {overview?.pipeline.stream_name || 'stream:telemetry:raw'}
             </span>
             <span
-              className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded text-[11px] font-semibold border ${
+              className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded text-xs font-medium border ${
                 overview?.pipeline.stream_status === 'HEALTHY'
-                  ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60'
-                  : 'bg-amber-950/60 text-amber-400 border-amber-800/60'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-amber-50 text-amber-700 border-amber-200'
               }`}
             >
               {overview?.pipeline.stream_status === 'HEALTHY' ? (
-                <CheckCircle2 className="w-3 h-3" />
+                <CheckCircle2 className="w-3.5 h-3.5" />
               ) : (
-                <AlertTriangle className="w-3 h-3" />
+                <AlertTriangle className="w-3.5 h-3.5" />
               )}
               <span>{overview?.pipeline.stream_status || 'UNKNOWN'}</span>
             </span>
@@ -366,29 +366,29 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-          <div className="p-3 bg-surface-elevated/40 rounded-lg border border-border/60">
-            <span className="text-slate-400 block mb-1">Redis Stream Length</span>
-            <span className="text-base font-bold text-white font-mono">
+          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <span className="text-gray-500 block mb-1">Redis Stream Length</span>
+            <span className="text-base font-bold text-gray-900 font-mono">
               {overview?.pipeline.stream_length !== null && overview?.pipeline.stream_length !== undefined
                 ? overview.pipeline.stream_length.toLocaleString()
                 : 'N/A'}
             </span>
           </div>
-          <div className="p-3 bg-surface-elevated/40 rounded-lg border border-border/60">
-            <span className="text-slate-400 block mb-1">Outbox Pending</span>
-            <span className="text-base font-bold text-amber-400 font-mono">
+          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <span className="text-gray-500 block mb-1">Outbox Pending</span>
+            <span className="text-base font-bold text-amber-600 font-mono">
               {overview?.pipeline.outbox_pending ?? 0}
             </span>
           </div>
-          <div className="p-3 bg-surface-elevated/40 rounded-lg border border-border/60">
-            <span className="text-slate-400 block mb-1">Outbox Published</span>
-            <span className="text-base font-bold text-emerald-400 font-mono">
+          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <span className="text-gray-500 block mb-1">Outbox Published</span>
+            <span className="text-base font-bold text-emerald-600 font-mono">
               {overview?.pipeline.outbox_published ?? 0}
             </span>
           </div>
-          <div className="p-3 bg-surface-elevated/40 rounded-lg border border-border/60">
-            <span className="text-slate-400 block mb-1">Detection Rules Active</span>
-            <span className="text-base font-bold text-blue-400 font-mono">
+          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <span className="text-gray-500 block mb-1">Detection Rules Active</span>
+            <span className="text-base font-bold text-blue-600 font-mono">
               {overview?.rules.active_rules ?? 0} / {overview?.rules.total_rules ?? 0}
             </span>
           </div>
@@ -397,23 +397,23 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
 
       {/* Operational Diagnostics & Infrastructure Health */}
       {diagnostics && (
-        <div className="rounded-xl border border-border bg-surface p-5 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-border gap-2">
+        <div className="rounded-lg border border-gray-200 bg-white p-5 space-y-4 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-gray-200 gap-2">
             <div className="flex items-center space-x-2.5">
-              <Activity className="w-4 h-4 text-emerald-400" />
-              <h3 className="text-sm font-semibold text-white">Production Operational Diagnostics</h3>
-              <span className="text-[11px] text-slate-400 font-mono">
+              <Activity className="w-4 h-4 text-blue-600" />
+              <h3 className="text-sm font-semibold text-gray-900">Production Operational Diagnostics</h3>
+              <span className="text-xs text-gray-500 font-mono">
                 (Uptime: {Math.floor(diagnostics.uptime_seconds / 3600)}h {Math.floor((diagnostics.uptime_seconds % 3600) / 60)}m)
               </span>
             </div>
             <div className="flex items-center space-x-2">
               <span
-                className={`inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded text-xs font-semibold border ${
+                className={`inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded text-xs font-medium border ${
                   diagnostics.status === 'HEALTHY'
-                    ? 'bg-emerald-950/80 text-emerald-300 border-emerald-800'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                     : diagnostics.status === 'DEGRADED'
-                    ? 'bg-amber-950/80 text-amber-300 border-amber-800'
-                    : 'bg-red-950/80 text-red-300 border-red-800'
+                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                    : 'bg-red-50 text-red-700 border-red-200'
                 }`}
               >
                 {diagnostics.status === 'HEALTHY' ? (
@@ -431,27 +431,27 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
             {Object.entries(diagnostics.dependencies).map(([key, dep]) => (
               <div
                 key={key}
-                className="p-3 bg-surface-elevated/40 rounded-lg border border-border/60 flex flex-col justify-between space-y-1.5"
+                className="p-3 bg-gray-50 rounded-lg border border-gray-200 flex flex-col justify-between space-y-1.5"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-slate-300 truncate" title={dep.name}>
+                  <span className="font-medium text-gray-800 truncate" title={dep.name}>
                     {dep.name}
                   </span>
                   <span
                     className={`w-2 h-2 rounded-full ${
                       dep.status === 'HEALTHY'
-                        ? 'bg-emerald-400'
+                        ? 'bg-emerald-500'
                         : dep.status === 'DEGRADED'
-                        ? 'bg-amber-400'
-                        : 'bg-red-400'
+                        ? 'bg-amber-500'
+                        : 'bg-red-500'
                     }`}
                     title={dep.status}
                   />
                 </div>
-                <div className="text-[11px] text-slate-400 truncate" title={dep.message || ''}>
+                <div className="text-xs text-gray-500 truncate" title={dep.message || ''}>
                   {dep.status}
                 </div>
-                <div className="text-[10px] text-slate-500 font-mono">
+                <div className="text-[11px] text-gray-500 font-mono">
                   {dep.latency_ms !== null && dep.latency_ms !== undefined
                     ? `${dep.latency_ms.toFixed(1)} ms`
                     : dep.details && typeof dep.details.active_workers_count === 'number'
@@ -465,27 +465,27 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
           {/* Worker Status & Backlogs Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
             {/* Background Workers & Lag */}
-            <div className="p-3.5 bg-surface-elevated/30 rounded-lg border border-border/50 text-xs space-y-2">
-              <div className="flex items-center justify-between text-slate-300 font-semibold border-b border-border/40 pb-1.5">
+            <div className="p-3.5 bg-gray-50 rounded-lg border border-gray-200 text-xs space-y-2">
+              <div className="flex items-center justify-between text-gray-800 font-medium border-b border-gray-200 pb-1.5">
                 <span>Detection Consumer Workers</span>
-                <span className="font-mono text-[11px] text-slate-400">
+                <span className="font-mono text-xs text-gray-500">
                   Lag: {diagnostics.backlogs.telemetry_stream_lag} | PEL: {diagnostics.backlogs.telemetry_pel_size}
                 </span>
               </div>
               {diagnostics.telemetry_workers.length === 0 ? (
-                <div className="text-slate-400 text-[11px] italic">
+                <div className="text-gray-500 text-xs italic">
                   No consumer worker heartbeats detected.
                 </div>
               ) : (
                 <div className="space-y-1.5 max-h-28 overflow-y-auto">
                   {diagnostics.telemetry_workers.map((w) => (
-                    <div key={w.worker_id} className="flex items-center justify-between text-[11px] font-mono bg-surface/50 px-2 py-1 rounded">
-                      <span className="text-white truncate max-w-[140px]">{w.worker_id}</span>
-                      <span className="text-slate-400">
+                    <div key={w.worker_id} className="flex items-center justify-between text-xs font-mono bg-white px-2 py-1 rounded border border-gray-200">
+                      <span className="text-gray-900 truncate max-w-[140px]">{w.worker_id}</span>
+                      <span className="text-gray-500">
                         HB: {w.heartbeat_age_seconds !== null ? `${w.heartbeat_age_seconds}s ago` : 'never'}
                       </span>
                       <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                        w.status === 'HEALTHY' ? 'text-emerald-400' : 'text-amber-400'
+                        w.status === 'HEALTHY' ? 'text-emerald-700 bg-emerald-50' : 'text-amber-700 bg-amber-50'
                       }`}>
                         {w.status}
                       </span>
@@ -496,14 +496,14 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
             </div>
 
             {/* Integration Backlogs & Stalled Operations */}
-            <div className="p-3.5 bg-surface-elevated/30 rounded-lg border border-border/50 text-xs space-y-2">
-              <div className="flex items-center justify-between text-slate-300 font-semibold border-b border-border/40 pb-1.5">
+            <div className="p-3.5 bg-gray-50 rounded-lg border border-gray-200 text-xs space-y-2">
+              <div className="flex items-center justify-between text-gray-800 font-medium border-b border-gray-200 pb-1.5">
                 <span>Operational Backlogs & Stalled Workflows</span>
-                <span className={`font-mono text-[11px] ${
+                <span className={`font-mono text-xs ${
                   diagnostics.stalled_operations.stalled_executing_plans_count > 0 ||
                   diagnostics.stalled_operations.uncertain_actions_count > 0
-                    ? 'text-amber-400 font-bold'
-                    : 'text-emerald-400'
+                    ? 'text-amber-600 font-bold'
+                    : 'text-emerald-600'
                 }`}>
                   {diagnostics.stalled_operations.stalled_executing_plans_count +
                     diagnostics.stalled_operations.uncertain_actions_count}{' '}
@@ -511,24 +511,24 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2 text-center pt-0.5">
-                <div className="p-1.5 bg-surface/40 rounded border border-border/40">
-                  <span className="block text-[10px] text-slate-400">Outbound Backlog</span>
-                  <span className="font-mono font-bold text-white text-xs">
+                <div className="p-1.5 bg-white rounded border border-gray-200">
+                  <span className="block text-[10px] text-gray-500">Outbound Backlog</span>
+                  <span className="font-mono font-bold text-gray-900 text-xs">
                     {diagnostics.backlogs.outbound_notifications_pending} pending
                   </span>
                 </div>
-                <div className="p-1.5 bg-surface/40 rounded border border-border/40">
-                  <span className="block text-[10px] text-slate-400">Outbound Retries</span>
+                <div className="p-1.5 bg-white rounded border border-gray-200">
+                  <span className="block text-[10px] text-gray-500">Outbound Retries</span>
                   <span className={`font-mono font-bold text-xs ${
-                    diagnostics.backlogs.outbound_notifications_retrying > 0 ? 'text-amber-400' : 'text-slate-300'
+                    diagnostics.backlogs.outbound_notifications_retrying > 0 ? 'text-amber-600' : 'text-gray-700'
                   }`}>
                     {diagnostics.backlogs.outbound_notifications_retrying} retrying
                   </span>
                 </div>
-                <div className="p-1.5 bg-surface/40 rounded border border-border/40">
-                  <span className="block text-[10px] text-slate-400">Dead-Letter Queue</span>
+                <div className="p-1.5 bg-white rounded border border-gray-200">
+                  <span className="block text-[10px] text-gray-500">Dead-Letter Queue</span>
                   <span className={`font-mono font-bold text-xs ${
-                    diagnostics.backlogs.outbound_notifications_dead_letter > 0 ? 'text-red-400' : 'text-emerald-400'
+                    diagnostics.backlogs.outbound_notifications_dead_letter > 0 ? 'text-red-600' : 'text-emerald-600'
                   }`}>
                     {diagnostics.backlogs.outbound_notifications_dead_letter} DLQ
                   </span>
@@ -542,15 +542,15 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
       {/* Main Section: Recent Incidents Table & Telemetry Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Incidents Table (2 Cols) */}
-        <div className="lg:col-span-2 rounded-xl border border-border bg-surface p-5">
-          <div className="flex items-center justify-between pb-3 border-b border-border mb-4">
+        <div className="lg:col-span-2 rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between pb-3 border-b border-gray-200 mb-4">
             <div className="flex items-center space-x-2">
-              <Layers className="w-4 h-4 text-red-400" />
-              <h3 className="text-sm font-semibold text-white">Correlated Incident Forensics</h3>
+              <Layers className="w-4 h-4 text-blue-600" />
+              <h3 className="text-sm font-semibold text-gray-900">Correlated Incident Forensics</h3>
             </div>
             <button
               onClick={() => onSelectWorkspace('investigation')}
-              className="flex items-center space-x-1 text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors"
+              className="flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors"
             >
               <span>View Forensics Workspace</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -567,52 +567,52 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-border text-slate-400 font-semibold">
-                    <th className="pb-2.5">INCIDENT</th>
-                    <th className="pb-2.5">SEVERITY</th>
-                    <th className="pb-2.5">RISK SCORE</th>
-                    <th className="pb-2.5">FINDINGS</th>
-                    <th className="pb-2.5">STATUS</th>
-                    <th className="pb-2.5 text-right">ACTION</th>
+                  <tr className="border-b border-gray-200 text-gray-500 font-medium bg-gray-50/50">
+                    <th className="py-2.5 px-3">INCIDENT</th>
+                    <th className="py-2.5 px-2">SEVERITY</th>
+                    <th className="py-2.5 px-2">RISK SCORE</th>
+                    <th className="py-2.5 px-2">FINDINGS</th>
+                    <th className="py-2.5 px-2">STATUS</th>
+                    <th className="py-2.5 px-3 text-right">ACTION</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/60">
+                <tbody className="divide-y divide-gray-100">
                   {overview.incidents.recent_activity.map((inc) => (
-                    <tr key={inc.incident_id} className="hover:bg-surface-elevated/50 transition-colors">
-                      <td className="py-3">
-                        <div className="font-semibold text-white">
+                    <tr key={inc.incident_id} className="hover:bg-gray-50/80 transition-colors">
+                      <td className="py-3 px-3">
+                        <div className="font-medium text-gray-900">
                           #{inc.incident_number} {inc.title}
                         </div>
-                        <div className="text-[11px] text-slate-400">
+                        <div className="text-xs text-gray-500">
                           {inc.last_seen ? new Date(inc.last_seen).toLocaleString() : 'Recent'}
                         </div>
                       </td>
-                      <td className="py-3">
+                      <td className="py-3 px-2">
                         <span
-                          className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${getSeverityBadge(
+                          className={`inline-block px-2 py-0.5 rounded text-[11px] font-medium border ${getSeverityBadge(
                             inc.severity
                           )}`}
                         >
                           {inc.severity}
                         </span>
                       </td>
-                      <td className="py-3 font-mono">
+                      <td className="py-3 px-2 font-mono">
                         <span className={getRiskScoreColor(inc.composite_risk_score)}>
                           {inc.composite_risk_score.toFixed(1)}
                         </span>
                       </td>
-                      <td className="py-3 text-slate-300 font-mono">
+                      <td className="py-3 px-2 text-gray-700 font-mono">
                         {inc.findings_count}
                       </td>
-                      <td className="py-3">
-                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-medium bg-surface-elevated text-slate-300 border border-border">
+                      <td className="py-3 px-2">
+                        <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-700 border border-gray-200">
                           {inc.status}
                         </span>
                       </td>
-                      <td className="py-3 text-right">
+                      <td className="py-3 px-3 text-right">
                         <button
                           onClick={() => onSelectWorkspace('investigation', inc.incident_id)}
-                          className="px-2.5 py-1 rounded bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 border border-blue-500/30 text-[11px] font-medium transition-colors"
+                          className="px-2.5 py-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-medium transition-colors"
                         >
                           Investigate
                         </button>
@@ -628,33 +628,33 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
         {/* Breakdown Panel: Findings by Severity & Telemetry by Type (1 Col) */}
         <div className="space-y-6">
           {/* Findings by Severity */}
-          <div className="rounded-xl border border-border bg-surface p-5">
-            <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-3">
+          <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+            <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">
               Findings by Severity ({overview?.findings.total ?? 0})
             </h4>
-            <div className="space-y-2 text-xs">
+            <div className="space-y-2.5 text-xs">
               {(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFORMATIONAL'] as Severity[]).map((sev) => {
                 const count = overview?.findings.by_severity[sev] || 0;
                 const total = overview?.findings.total || 1;
                 const pct = Math.round((count / total) * 100);
                 return (
                   <div key={sev} className="space-y-1">
-                    <div className="flex justify-between text-[11px]">
-                      <span className="text-slate-400">{sev}</span>
-                      <span className="font-mono text-white font-medium">{count}</span>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">{sev}</span>
+                      <span className="font-mono text-gray-900 font-medium">{count}</span>
                     </div>
-                    <div className="w-full h-1.5 bg-surface-elevated rounded-full overflow-hidden">
+                    <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full ${
                           sev === 'CRITICAL'
                             ? 'bg-red-500'
                             : sev === 'HIGH'
-                            ? 'bg-orange-500'
+                            ? 'bg-amber-500'
                             : sev === 'MEDIUM'
-                            ? 'bg-yellow-500'
-                            : sev === 'LOW'
                             ? 'bg-blue-500'
-                            : 'bg-slate-500'
+                            : sev === 'LOW'
+                            ? 'bg-gray-400'
+                            : 'bg-gray-300'
                         }`}
                         style={{ width: `${overview?.findings.total ? pct : 0}%` }}
                       />
@@ -666,8 +666,8 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
           </div>
 
           {/* 24h Ingestion by Event Type */}
-          <div className="rounded-xl border border-border bg-surface p-5">
-            <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-3">
+          <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+            <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">
               Event Types (24h)
             </h4>
             <div className="space-y-2 text-xs">
@@ -682,10 +682,10 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
                 return (
                   <div
                     key={et.key}
-                    className="flex items-center justify-between p-2 rounded bg-surface-elevated/40 border border-border/40"
+                    className="flex items-center justify-between p-2 rounded bg-gray-50 border border-gray-200"
                   >
-                    <span className="text-slate-300 text-[11px]">{et.label}</span>
-                    <span className="font-mono text-xs font-semibold text-blue-400">
+                    <span className="text-gray-700 text-xs">{et.label}</span>
+                    <span className="font-mono text-xs font-semibold text-blue-700">
                       {count.toLocaleString()}
                     </span>
                   </div>
@@ -697,15 +697,15 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
       </div>
 
       {/* Recent Containment Actions Feed */}
-      <div className="rounded-xl border border-border bg-surface p-5">
-        <div className="flex items-center justify-between pb-3 border-b border-border mb-4">
+      <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center justify-between pb-3 border-b border-gray-200 mb-4">
           <div className="flex items-center space-x-2">
-            <ShieldCheck className="w-4 h-4 text-purple-400" />
-            <h3 className="text-sm font-semibold text-white">Recent SOAR Containment Actions</h3>
+            <ShieldCheck className="w-4 h-4 text-blue-600" />
+            <h3 className="text-sm font-semibold text-gray-900">Recent SOAR Containment Actions</h3>
           </div>
           <button
             onClick={() => onSelectWorkspace('soar')}
-            className="flex items-center space-x-1 text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors"
+            className="flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors"
           >
             <span>View SOAR & Audit Ledger</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -723,30 +723,30 @@ export const CommandOverview: React.FC<CommandOverviewProps> = ({
             {overview.responses.recent_actions.map((act) => (
               <div
                 key={act.command_id}
-                className="p-3 rounded-lg bg-surface-elevated border border-border/70 flex flex-col justify-between space-y-2 text-xs"
+                className="p-3 rounded-lg bg-gray-50 border border-gray-200 flex flex-col justify-between space-y-2 text-xs"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-white uppercase text-[11px]">
+                  <span className="font-mono font-bold text-gray-900 uppercase text-xs">
                     {act.action}
                   </span>
                   <span
-                    className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                    className={`px-2 py-0.5 rounded text-[11px] font-medium border ${
                       act.status === 'VERIFIED_CONTAINED'
-                        ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                         : act.status === 'VERIFICATION_INCONCLUSIVE'
-                        ? 'bg-amber-950 text-amber-300 border border-amber-800'
+                        ? 'bg-amber-50 text-amber-700 border-amber-200'
                         : act.status === 'FAILED'
-                        ? 'bg-red-950 text-red-300 border border-red-800'
-                        : 'bg-blue-950 text-blue-300 border border-blue-800'
+                        ? 'bg-red-50 text-red-700 border-red-200'
+                        : 'bg-blue-50 text-blue-700 border-blue-200'
                     }`}
                   >
                     {act.status}
                   </span>
                 </div>
-                <div className="text-[11px] text-slate-400 font-mono">
+                <div className="text-xs text-gray-600 font-mono">
                   Agent: {act.agent_id.substring(0, 8)}...
                 </div>
-                <div className="text-[10px] text-slate-500">
+                <div className="text-[11px] text-gray-500">
                   {new Date(act.issued_at).toLocaleString()}
                 </div>
               </div>

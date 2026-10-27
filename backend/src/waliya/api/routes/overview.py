@@ -27,7 +27,7 @@ from waliya.contracts import (
     SeverityEnum,
     SystemOverviewResponse,
 )
-from waliya.core.auth import verify_admin_key
+from waliya.core.auth import verify_viewer_or_above
 from waliya.db.models import (
     AgentModel,
     EventModel,
@@ -51,7 +51,7 @@ router = APIRouter(prefix="/overview", tags=["overview"])
     summary="Get comprehensive platform security and operational overview",
 )
 async def get_system_overview(
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
     session: AsyncSession = Depends(get_db_session),
 ) -> SystemOverviewResponse:
     """Retrieve actual database-derived counts, incident posture, and ingestion health."""

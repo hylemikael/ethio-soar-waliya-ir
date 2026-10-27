@@ -123,9 +123,13 @@ async def create_user(
             detail="A user with this username or email already exists.",
         )
 
-    # Validate NIST password complexity
+    # Validate NIST password complexity (enforcing 15-character minimum for non-MFA provisioned account)
     try:
-        validate_password_complexity(payload.password, username=payload.username.strip())
+        validate_password_complexity(
+            payload.password,
+            username=payload.username.strip(),
+            is_mfa_enforced=False,
+        )
     except PasswordPolicyError as err:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
 
@@ -217,6 +221,30 @@ async def update_user(
     user = res.scalars().first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
+    # Guard against demoting or deactivating the root administrator account
+    if user.username == "admin" and payload.role is not None and payload.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot demote the root administrator account.",
+        )
+    if user.username == "admin" and payload.is_active is False:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot deactivate the root administrator account.",
+        )
+
+    # Guard against self-demotion or self-deactivation by active interactive administrators
+    if admin.user_id and user.id == admin.user_id and payload.role is not None and payload.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Administrators cannot demote their own account. Another administrator must perform this action.",
+        )
+    if admin.user_id and user.id == admin.user_id and payload.is_active is False:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Administrators cannot deactivate their own account.",
+        )
 
     revocation_needed = False
 

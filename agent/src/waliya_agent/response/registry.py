@@ -9,6 +9,7 @@ from waliya_agent.response.handlers.base import BaseActionHandler, ExecutionResu
 from waliya_agent.response.handlers.block_ip import BlockIpHandler, UnblockIpHandler
 from waliya_agent.response.handlers.forensic import CollectForensicHandler
 from waliya_agent.response.handlers.process import TerminateProcessHandler
+from waliya_agent.response.handlers.file_recovery import RecoverWebsiteFileHandler
 from waliya_agent.response.validator import ActionValidator
 
 logger = logging.getLogger("waliya_agent.response.registry")
@@ -29,6 +30,7 @@ class ResponseActionRegistry:
                 forensic_dir=config.forensic_artifact_dir,
                 max_size_mb=config.max_forensic_size_mb,
             ),
+            "RECOVER_WEBSITE_FILE": RecoverWebsiteFileHandler(),
         }
 
     @staticmethod
@@ -56,6 +58,13 @@ class ResponseActionRegistry:
             return ActionValidator.validate_terminate_process(parameters)
         elif act == "COLLECT_FORENSIC_ARTIFACT":
             return ActionValidator.validate_collect_forensic(parameters)
+        elif act == "RECOVER_WEBSITE_FILE":
+            return ActionValidator.validate_recover_website_file(
+                parameters,
+                default_web_root=getattr(self.config, "website_root_dir", None),
+                default_backup_dir=getattr(self.config, "website_backup_dir", None),
+                default_quarantine_dir=getattr(self.config, "quarantine_dir", None),
+            )
         else:
             raise ValueError(f"Unknown or unsupported response action: '{action_name}'")
 

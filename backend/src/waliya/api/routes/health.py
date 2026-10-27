@@ -14,7 +14,7 @@ from waliya.contracts import (
     ReadinessResponse,
     SystemDiagnosticsResponse,
 )
-from waliya.core.auth import verify_admin_key
+from waliya.core.auth import verify_auditor_or_admin, verify_viewer_or_above
 from waliya.db.session import engine, get_db_session
 from waliya.observability.diagnostics_service import OperationalDiagnosticsService
 from waliya.observability.metrics import get_metrics_collector
@@ -103,7 +103,7 @@ async def get_readiness(response: Response) -> ReadinessResponse:
     description="Administrative diagnostic probe evaluating subsystem health, worker heartbeats, queue lag, and stalled operations.",
 )
 async def get_system_diagnostics(
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_auditor_or_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> SystemDiagnosticsResponse:
     """Collect and return operational diagnostics across all platform services and background workers."""
@@ -130,7 +130,7 @@ async def get_system_diagnostics(
     description="Administrative operational metrics with strictly bounded cardinality across HTTP requests, ingestion, and delivery pipelines.",
 )
 async def get_system_metrics(
-    _admin: str = Depends(verify_admin_key),
+    _admin: str = Depends(verify_viewer_or_above),
 ) -> OperationalMetricsResponse:
     """Return in-memory bounded operational metrics."""
     return get_metrics_collector().get_metrics()
